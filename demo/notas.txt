@@ -1,0 +1,11 @@
+users disponiveis: admin / admin 	e 	user1 / user1
+
+
+
+fazer um teste
+
+@GetMapping("/find/{id}")
+public ResponseEntity<User> getUserById(@PathVariable("id") long id){
+	User user = userService.findUserById(id);
+	return new ResponseEntity<>(user, HttpStatus.OK);
+}
