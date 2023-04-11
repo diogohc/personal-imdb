@@ -9,8 +9,6 @@ import MyImdb.demo.model.Review;
 import MyImdb.demo.repository.MovieRepository;
 import MyImdb.demo.repository.ReviewRepository;
 import MyImdb.demo.utils.GetData;
-import MyImdb.demo.utils.UserData;
-import MyImdb.demo.utils.UserSessionData;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -38,7 +36,8 @@ public class MovieService {
     @Autowired
     ReviewRepository reviewRepository;
 
-
+    @Autowired
+    ReviewService reviewService;
 
     public ResponseEntity<?> addMovie(String imdbId) throws JSONException, JsonProcessingException {
         String[] url = {"https://www.omdbapi.com/?i=", "&apikey=a9c633d3"};
@@ -85,12 +84,15 @@ public class MovieService {
         List<Movie> moviesList = movieRepository.findAll();
         List<MovieDto> movies = new ArrayList<MovieDto>();
 
-        UserSessionData userSessionData = new UserSessionData();
-        UserData userData = userSessionData.getUserData();
-        System.out.println("INSIDE MOVIE SERVICE: "+ userSessionData.getUserData().mapMovieIdRating);
+        HashMap<Integer, Integer> hmMovieIdRating = new HashMap<>();
+        //Get user reviews. If the user rated the movie, include its value
+        Vector<ReviewDto> userReviews= reviewService.listUserReviews(username);
+        for(ReviewDto reviewDto: userReviews){
+            hmMovieIdRating.put((int) reviewDto.getMovieId(), reviewDto.getRating());
+        }
 
         for(Movie movie: moviesList){
-            Integer rating = userSessionData.getUserData().mapMovieIdRating.get(movie.getId().intValue());
+            Integer rating = hmMovieIdRating.get(movie.getId().intValue());
             MovieDto movieDto = new MovieDto(Math.toIntExact(movie.getId()), movie.getTitle(), movie.getPoster(), rating==null ? -1 : rating);
             movies.add(movieDto);
         }

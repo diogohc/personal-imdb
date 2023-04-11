@@ -1,6 +1,5 @@
 package MyImdb.demo.service;
 
-import MyImdb.demo.DemoApplication;
 import MyImdb.demo.auth.AuthenticationRequest;
 import MyImdb.demo.auth.AuthenticationResponse;
 import MyImdb.demo.auth.RegisterRequest;
@@ -9,14 +8,11 @@ import MyImdb.demo.dto.ReviewDto;
 import MyImdb.demo.model.Role;
 import MyImdb.demo.model.User;
 import MyImdb.demo.repository.UserRepository;
-import MyImdb.demo.utils.UserData;
-import MyImdb.demo.utils.UserSessionData;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -36,7 +32,6 @@ public class AuthenticationService {
 
     @Autowired
     ReviewService reviewService;
-
 
 
     public AuthenticationResponse register(RegisterRequest request) {
@@ -68,13 +63,6 @@ public class AuthenticationService {
         if(!passwordEncoder.matches(request.getPassword(), user.get().getPassword())){
             return AuthenticationResponse.builder().response("Wrong password").build();
         }
-
-        //Populate User Data
-        UserData userData = new UserData();
-        userData.mapMovieIdRating = populateMapMovieIdRating(user.get().getUsername());
-        System.out.println(userData.mapMovieIdRating);
-        UserSessionData userSessionData = new UserSessionData();
-        userSessionData.setUserData(userData);
 
         logger.info("User "+user.get().getUsername()+" logged in");
         //generate token and return it
