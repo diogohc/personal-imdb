@@ -1,10 +1,14 @@
 package MyImdb.demo.service;
 
 import MyImdb.demo.config.JwtService;
+import MyImdb.demo.dto.ReviewDto;
+import MyImdb.demo.dto.UserDto;
+import MyImdb.demo.model.Review;
 import MyImdb.demo.model.User;
 import MyImdb.demo.repository.ReviewRepository;
 import MyImdb.demo.repository.UserRepository;
 import MyImdb.demo.utils.ExcelUser;
+import MyImdb.demo.utils.ObjectMapperUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -12,12 +16,15 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -72,6 +79,30 @@ public class UserService {
     public int getUserIdWithUsername(String username){
         Optional<User> user =  userRepository.findByUsername(username);
         return user.map(value -> value.getId().intValue()).orElse(-1);
+    }
+
+    public List<UserDto> getAllUsersWithReviews(){
+        List<User> listUsers = userRepository.findAll();
+        List<UserDto> listUsersDto = new ArrayList<>();
+        List<Review> userReviews = new ArrayList<>();
+        List<ReviewDto> userReviewsDto = null;
+        for(User user: listUsers){
+            userReviewsDto = new ArrayList<>();
+            userReviews = reviewRepository.getReviewsByUserId(Math.toIntExact(user.getId()), Sort.by("date_added"));
+            for(Review review: userReviews){
+                ReviewDto reviewDto = new ReviewDto(review.getId(), review.getMovie().getId(), review.getRating(),
+                        review.getMovie().getPoster(), review.getMovie().getTitle(), review.getDate_added());
+                userReviewsDto.add(reviewDto);
+            }
+            UserDto userDto = new UserDto(user.getUsername(), user.getRole(), userReviewsDto);
+            listUsersDto.add(userDto);
+        }
+
+        return listUsersDto;
+    }
+
+    public List<UserDto> getAllUsers(){
+        return ObjectMapperUtils.mapAll(userRepository.findAll(), UserDto.class);
     }
 
 }
