@@ -79,7 +79,7 @@ public class MovieService {
         return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
     }
 
-    public ResponseEntity<?> getAllMovies(String username) {
+    public List<MovieDto> getAllMovies(String username) {
 
         List<Movie> moviesList = movieRepository.findAll();
         List<MovieDto> movies = new ArrayList<MovieDto>();
@@ -97,7 +97,7 @@ public class MovieService {
             movies.add(movieDto);
         }
 
-        return new ResponseEntity<Object>(movies, HttpStatus.OK);
+        return movies;
     }
 
     public ResponseEntity<?> getMovieById(int id, int userId) throws JsonProcessingException {
