@@ -33,8 +33,9 @@ public class Movie {
     private int runtime;
     private float imdbRating;
     private String genre;
-    @OneToMany(mappedBy = "movie")
     @JsonBackReference
+    @OrderBy("date_added")
+    @OneToMany(mappedBy = "movie")
     private List<Review> review;
     private Timestamp dt_created;
 

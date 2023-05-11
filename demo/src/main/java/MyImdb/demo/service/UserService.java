@@ -1,6 +1,6 @@
 package MyImdb.demo.service;
 
-import MyImdb.demo.config.JwtService;
+
 import MyImdb.demo.dto.ReviewDto;
 import MyImdb.demo.dto.UserDto;
 import MyImdb.demo.model.Review;
@@ -10,36 +10,31 @@ import MyImdb.demo.repository.UserRepository;
 import MyImdb.demo.utils.ExcelUser;
 import MyImdb.demo.utils.ObjectMapperUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import jakarta.servlet.http.HttpServletResponse;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
 import java.io.IOException;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 
 @Service
+@Slf4j
+@RequiredArgsConstructor
 public class UserService {
-    @Autowired
-    UserRepository userRepository;
-    @Autowired
-    ReviewRepository reviewRepository;
-    @Autowired
-    private ObjectMapper objectMapper;
 
+    private final UserRepository userRepository;
 
-    private static Logger logger = LoggerFactory.getLogger(UserService.class.getName());
+    private final ReviewRepository reviewRepository;
+
+    private final ObjectMapper objectMapper;
 
     public Optional<User> findUserById(long id){
         return this.userRepository.findById(id);
@@ -56,8 +51,8 @@ public class UserService {
     public ResponseEntity<?> getUserStats(int userId){
         int totalNrMoviesWatched;
         int totalMinutesMoviesWatched;
-        logger.info("Getting user stats for user: " + userId);
-        Optional<User> user = userRepository.findById(1L);
+        log.info("Getting user stats for user: " + userId);
+        Optional<User> user = userRepository.findById((long) userId);
         if(user.isPresent()){
             totalNrMoviesWatched = reviewRepository.nrMoviesWatched(user.get().getId());
             totalMinutesMoviesWatched = reviewRepository.minutesMoviesWatched(user.get().getId());

@@ -9,8 +9,7 @@ import MyImdb.demo.model.Role;
 import MyImdb.demo.model.User;
 import MyImdb.demo.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -22,9 +21,9 @@ import java.util.Vector;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class AuthenticationService {
 
-    private static final Logger logger = LoggerFactory.getLogger(AuthenticationService.class);
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
@@ -43,9 +42,9 @@ public class AuthenticationService {
         }
 
         userRepository.save(user);
-        logger.info("User "+user.getUsername()+" is registered");
+        log.info("User "+user.getUsername()+" is registered");
         String token = jwtService.generateToken(user);
-        logger.info("Registration generated JWT: "+token);
+        log.info("Registration generated JWT: "+token);
         return AuthenticationResponse.builder().token(token).build();
     }
 
@@ -64,10 +63,10 @@ public class AuthenticationService {
             return AuthenticationResponse.builder().response("Wrong password").build();
         }
 
-        logger.info("User "+user.get().getUsername()+" logged in");
+        log.info("User "+user.get().getUsername()+" logged in");
         //generate token and return it
         String token = jwtService.generateToken(user.get());
-        logger.info("Authentication generated JWT: "+token);
+        log.info("Authentication generated JWT: "+token);
         return AuthenticationResponse.builder().token(token).role(user.get().getRole()).id(Math.toIntExact(user.get().getId())).build();
     }
 

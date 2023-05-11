@@ -13,11 +13,14 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -26,19 +29,16 @@ import java.sql.Timestamp;
 import java.util.*;
 
 @Service
+@Slf4j
+@RequiredArgsConstructor
 public class MovieService {
+    private final MovieRepository movieRepository;
 
-    private static Logger logger = LoggerFactory.getLogger(MovieService.class.getName());
-
-    @Autowired
-    MovieRepository movieRepository;
-
-    @Autowired
-    ReviewRepository reviewRepository;
+    private final ReviewRepository reviewRepository;
 
     @Autowired
     ReviewService reviewService;
-
+    //TODO solucao para ordenar reviews por nome de filme, sol1-> join em sql (dava erro) sol2-> adicionar coluna com movietitle na tabela de reviews
     public ResponseEntity<?> addMovie(String imdbId) throws JSONException, JsonProcessingException {
         String[] url = {"https://www.omdbapi.com/?i=", "&apikey=a9c633d3"};
         ObjectMapper objectMapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
@@ -53,7 +53,12 @@ public class MovieService {
         if(!jsonResponse.getString("Type").equalsIgnoreCase("movie")){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Only accept movies (for now)");
         }
-        logger.info("Adding the movie with the imdb_id " + imdbId +" to the database");
+
+        if(movieRepository.findByImdbId(imdbId).isPresent()){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Movie already exists in the database");
+        }
+
+        log.info("Adding the movie with the imdb_id " + imdbId +" to the database");
         MovieGson movieGson = objectMapper.readValue(stringResponse, MovieGson.class);
         return insertMovie(movieGson);
     }
@@ -79,16 +84,29 @@ public class MovieService {
         return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
     }
 
-    public List<MovieDto> getAllMovies(String username) {
+    public List<MovieDto> getAllMovies(String username, String filter, int offset, int pageSize) {
+        String orderBy = filter.split(",")[0].strip();
+        String ascOrDesc = filter.split(",")[1].strip();
+        List<Movie> moviesList = null;
+        Page<Movie> moviesListPage = null;
 
-        List<Movie> moviesList = movieRepository.findAll();
+        if(ascOrDesc.equalsIgnoreCase("asc")){
+            moviesListPage = movieRepository.findAll(PageRequest.of(offset, pageSize).withSort(Sort.by(orderBy).ascending()));
+        } else {
+            moviesListPage = movieRepository.findAll(PageRequest.of(offset, pageSize).withSort(Sort.by(orderBy).descending()));
+        }
+        //get list of movies from page
+        moviesList = moviesListPage.getContent();
+
         List<MovieDto> movies = new ArrayList<MovieDto>();
 
         HashMap<Integer, Integer> hmMovieIdRating = new HashMap<>();
         //Get user reviews. If the user rated the movie, include its value
         Vector<ReviewDto> userReviews= reviewService.listUserReviews(username);
-        for(ReviewDto reviewDto: userReviews){
-            hmMovieIdRating.put((int) reviewDto.getMovieId(), reviewDto.getRating());
+        if(userReviews!=null){
+            for(ReviewDto reviewDto: userReviews){
+                hmMovieIdRating.put((int) reviewDto.getMovieId(), reviewDto.getRating());
+            }
         }
 
         for(Movie movie: moviesList){
@@ -100,10 +118,10 @@ public class MovieService {
         return movies;
     }
 
-    public ResponseEntity<?> getMovieById(int id, int userId) throws JsonProcessingException {
+    public ResponseEntity<?> getMovieById(int id) throws JsonProcessingException {
         int userRating = -1;
         Optional<Movie> m = movieRepository.findById((long) id);
-        Optional<Review> review = reviewRepository.findReviewByMovieIdAndUserId(id, userId);
+        Optional<Review> review = reviewRepository.findReviewByMovieIdAndUserId(id, -1);
         if(review.isPresent()){
             userRating = review.get().getRating();
         }
@@ -115,4 +133,5 @@ public class MovieService {
         }
         return new ResponseEntity<Object>(null, HttpStatus.NOT_FOUND);
     }
+
 }

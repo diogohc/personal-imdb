@@ -29,10 +29,13 @@ public class Review {
     int rating;
     private Timestamp date_added;
 
-    public Review(User user, Movie movie, int rating, Timestamp timestamp) {
+    private String movieTitle;
+
+    public Review(User user, Movie movie, int rating, Timestamp timestamp, String movieTitle) {
         this.user = user;
         this.movie = movie;
         this.rating = rating;
         this.date_added = timestamp;
+        this.movieTitle = movieTitle;
     }
 }
