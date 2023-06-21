@@ -1,5 +1,6 @@
 package MyImdb.demo.service;
 
+import MyImdb.demo.DemoApplication;
 import MyImdb.demo.auth.AuthenticationRequest;
 import MyImdb.demo.auth.AuthenticationResponse;
 import MyImdb.demo.auth.RegisterRequest;
@@ -8,11 +9,14 @@ import MyImdb.demo.dto.ReviewDto;
 import MyImdb.demo.model.Role;
 import MyImdb.demo.model.User;
 import MyImdb.demo.repository.UserRepository;
+import MyImdb.demo.utils.UserData;
+import MyImdb.demo.utils.UserSessionData;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -32,6 +36,7 @@ public class AuthenticationService {
 
     @Autowired
     ReviewService reviewService;
+
 
 
     public AuthenticationResponse register(RegisterRequest request) {
@@ -64,11 +69,19 @@ public class AuthenticationService {
             return AuthenticationResponse.builder().response("Wrong password").build();
         }
 
+        //Populate User Data
+        UserData userData = new UserData();
+        userData.mapMovieIdRating = populateMapMovieIdRating(user.get().getUsername());
+
+        UserSessionData userSessionData = new UserSessionData();
+        userSessionData.setUserData(userData);
+
         logger.info("User "+user.get().getUsername()+" logged in");
         //generate token and return it
         String token = jwtService.generateToken(user.get());
         logger.info("Authentication generated JWT: "+token);
-        return AuthenticationResponse.builder().token(token).role(user.get().getRole()).id(Math.toIntExact(user.get().getId())).build();
+
+        return AuthenticationResponse.builder().token(token).id(Math.toIntExact(user.get().getId())).role(user.get().getRole()).build();
     }
 
 

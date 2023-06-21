@@ -1,26 +1,20 @@
 package MyImdb.demo.service;
 
 import MyImdb.demo.dto.ReviewDto;
-import MyImdb.demo.gson.MovieGson;
 import MyImdb.demo.model.Movie;
 import MyImdb.demo.model.Review;
 import MyImdb.demo.model.User;
 import MyImdb.demo.repository.MovieRepository;
 import MyImdb.demo.repository.ReviewRepository;
 import MyImdb.demo.repository.UserRepository;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import MyImdb.demo.utils.UserSessionData;
 import jakarta.transaction.Transactional;
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import java.net.URI;
 import java.sql.Timestamp;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Vector;
@@ -47,9 +41,14 @@ public class ReviewService {
         Optional<User> user = userRepository.findById((long) userId);
 
         if(user.isPresent() && movie.isPresent()){
-            Review review = new Review(user.get(), movie.get(), reviewdto.getRating(), reviewdto.getDateAdded());
+            Review review = new Review(user.get(), movie.get(), reviewdto.getRating(), reviewdto.getDateAdded() == null ? new Timestamp(System.currentTimeMillis()) : reviewdto.getDateAdded());
             reviewRepository.save(review);
+
             if(reviewRepository.existsById(review.getId())){
+                //update the user's map with the new review
+                UserSessionData userSessionData = new UserSessionData();
+                userSessionData.getUserData().mapMovieIdRating.put((int) reviewdto.getMovieId(), review.getRating());
+
                 return ResponseEntity.status(HttpStatus.CREATED).body(review);
             }
         }
@@ -87,13 +86,17 @@ public class ReviewService {
     }
 
     @Transactional
-    public ResponseEntity<?> editReview(String username, ReviewDto reviewDto){
+    public ResponseEntity<?> editReview(ReviewDto reviewDto){
         int nrRecordsUpdated;
 
         nrRecordsUpdated = reviewRepository.updateReviewRating(reviewDto.getRating(), reviewDto.getDateAdded(), (int) reviewDto.getId());
         if (nrRecordsUpdated==1) {
             Optional<Review> updatedReview = reviewRepository.findById((long) reviewDto.getId());
             if(updatedReview.isPresent()){
+                //update the user's map with the new review
+                UserSessionData userSessionData = new UserSessionData();
+                userSessionData.getUserData().mapMovieIdRating.put((int) reviewDto.getMovieId(), reviewDto.getRating());
+
                 return ResponseEntity.status(HttpStatus.OK).body(reviewDto);
             }
         }

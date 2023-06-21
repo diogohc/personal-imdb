@@ -23,6 +23,7 @@ public class UserController {
     //todo testar endpoint
     @GetMapping("/stats/{id}")
     public ResponseEntity<?> getUserStats(@PathVariable("id") int id){
+        userService.getMapYearNrMovies(id);
         return userService.getUserStats(id);
     }
 

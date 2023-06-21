@@ -9,6 +9,8 @@ import MyImdb.demo.model.Review;
 import MyImdb.demo.repository.MovieRepository;
 import MyImdb.demo.repository.ReviewRepository;
 import MyImdb.demo.utils.GetData;
+import MyImdb.demo.utils.UserData;
+import MyImdb.demo.utils.UserSessionData;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -28,7 +30,7 @@ import java.util.*;
 @Service
 public class MovieService {
 
-    private static Logger logger = LoggerFactory.getLogger(MovieService.class.getName());
+    private static final Logger logger = LoggerFactory.getLogger(MovieService.class.getName());
 
     @Autowired
     MovieRepository movieRepository;
@@ -36,8 +38,7 @@ public class MovieService {
     @Autowired
     ReviewRepository reviewRepository;
 
-    @Autowired
-    ReviewService reviewService;
+
 
     public ResponseEntity<?> addMovie(String imdbId) throws JSONException, JsonProcessingException {
         String[] url = {"https://www.omdbapi.com/?i=", "&apikey=a9c633d3"};
@@ -79,25 +80,21 @@ public class MovieService {
         return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
     }
 
-    public List<MovieDto> getAllMovies(String username) {
+    public ResponseEntity<?> getAllMovies(String username) {
 
         List<Movie> moviesList = movieRepository.findAll();
         List<MovieDto> movies = new ArrayList<MovieDto>();
 
-        HashMap<Integer, Integer> hmMovieIdRating = new HashMap<>();
-        //Get user reviews. If the user rated the movie, include its value
-        Vector<ReviewDto> userReviews= reviewService.listUserReviews(username);
-        for(ReviewDto reviewDto: userReviews){
-            hmMovieIdRating.put((int) reviewDto.getMovieId(), reviewDto.getRating());
-        }
+        UserSessionData userSessionData = new UserSessionData();
+        System.out.println("INSIDE MOVIE SERVICE: "+ userSessionData.getUserData().mapMovieIdRating);
 
-        for(Movie movie: moviesList){
-            Integer rating = hmMovieIdRating.get(movie.getId().intValue());
-            MovieDto movieDto = new MovieDto(Math.toIntExact(movie.getId()), movie.getTitle(), movie.getPoster(), rating==null ? -1 : rating);
+        moviesList.forEach(movie -> {
+            Integer rating = userSessionData.getUserData().mapMovieIdRating.get(movie.getId().intValue());
+            MovieDto movieDto = new MovieDto(Math.toIntExact(movie.getId()), movie.getTitle(), movie.getPoster(), rating == null ? -1 : rating);
             movies.add(movieDto);
-        }
+        });
 
-        return movies;
+        return new ResponseEntity<Object>(movies, HttpStatus.OK);
     }
 
     public ResponseEntity<?> getMovieById(int id, int userId) throws JsonProcessingException {

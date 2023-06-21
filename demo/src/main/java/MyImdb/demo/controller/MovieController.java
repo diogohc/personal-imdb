@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/movies")
+@PermitAll
 public class MovieController {
     @Autowired
     MovieService movieService = new MovieService();
@@ -38,7 +39,7 @@ public class MovieController {
         logger.info("[GET] - Get all movies ");
 
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        return new ResponseEntity<Object>(movieService.getAllMovies(username), HttpStatus.OK);
+        return movieService.getAllMovies(username);
     }
 
     @GetMapping("/{id}")

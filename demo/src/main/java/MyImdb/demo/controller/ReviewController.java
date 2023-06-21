@@ -52,7 +52,7 @@ public class ReviewController {
     @PutMapping("/editReview")
     public ResponseEntity<?> updateReview(@RequestBody ReviewDto reviewDto){
         logger.info("[PUT] - Edit review. Review Dto: " +reviewDto);
-        String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        return reviewService.editReview(username, reviewDto);
+
+        return reviewService.editReview(reviewDto);
     }
 }
