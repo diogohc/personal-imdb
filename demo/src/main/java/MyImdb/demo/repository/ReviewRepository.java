@@ -2,6 +2,8 @@ package MyImdb.demo.repository;
 
 import MyImdb.demo.dto.ReviewDto;
 import MyImdb.demo.model.Review;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -30,4 +32,7 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
 
     @Query(value = "select SUM(m.runtime) from Movie m inner join Review r on r.movie.id=m.id where r.user.id=?1")
     int minutesMoviesWatched(long userId);
+
+    @Query(value = "select r from Review r INNER JOIN Movie m ON r.movie.id = m.id  where r.user.id= ?1 order by ?2")
+    Page<Review> getReviewsByUserIdWithPagination(int userId, String orderBy, Pageable pageable);
 }
