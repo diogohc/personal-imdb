@@ -33,7 +33,7 @@ public class SecurityConfiguration {
                 .csrf()
                 .disable()
                 .authorizeHttpRequests()
-                .requestMatchers("/api/v1/auth/**")//only endpoints where the jwt is not needed
+                .requestMatchers("/api/v1/auth/**", "/api/v1/movies/**")
                 .permitAll()
                 .anyRequest()
                 .authenticated()
