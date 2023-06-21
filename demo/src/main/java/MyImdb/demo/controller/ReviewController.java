@@ -1,29 +1,28 @@
 package MyImdb.demo.controller;
 
-import MyImdb.demo.config.JwtService;
+
 import MyImdb.demo.dto.ReviewDto;
 import MyImdb.demo.service.ReviewService;
-import MyImdb.demo.service.UserService;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.json.JSONException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
-import java.sql.SQLOutput;
 import java.util.Vector;
 
 
 @RestController
 @RequestMapping("/api/v1/reviews")
+@Slf4j
+@RequiredArgsConstructor
 public class ReviewController {
 
-    private static final Logger logger = LoggerFactory.getLogger(ReviewController.class.getName());
-    @Autowired
-    ReviewService reviewService = new ReviewService();
+    private final ReviewService reviewService;
 
 
     @PostMapping("/addReview")
@@ -34,7 +33,7 @@ public class ReviewController {
 
     @DeleteMapping("/deleteReview")
     public ResponseEntity<?> deleteReview(@RequestParam(name="movieId") int movieId, @RequestParam(name="userId") int userId){
-        logger.info("[DELETE] - Delete review with movieId= "+movieId+" and userId= " +userId);
+        log.info("[DELETE] - Delete review with movieId= "+movieId+" and userId= " +userId);
         return reviewService.deleteReview(movieId, userId);
     }
 
@@ -42,7 +41,7 @@ public class ReviewController {
     public ResponseEntity<?> listUserReviews() throws JSONException {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         Vector<ReviewDto> reviews = reviewService.listUserReviews(username);
-        logger.info("[GET] - Get all user reviews");
+        log.info("[GET] - Get all user reviews");
         if(reviews!= null && reviews.size() > 0){
             return new ResponseEntity<Object>(reviews, HttpStatus.OK);
         }
@@ -51,7 +50,7 @@ public class ReviewController {
 
     @PutMapping("/editReview")
     public ResponseEntity<?> updateReview(@RequestBody ReviewDto reviewDto){
-        logger.info("[PUT] - Edit review. Review Dto: " +reviewDto);
+        log.info("[PUT] - Edit review. Review Dto: " +reviewDto);
 
         return reviewService.editReview(reviewDto);
     }

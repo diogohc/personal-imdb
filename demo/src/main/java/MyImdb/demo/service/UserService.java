@@ -1,23 +1,19 @@
 package MyImdb.demo.service;
 
-import MyImdb.demo.config.JwtService;
 import MyImdb.demo.model.User;
 import MyImdb.demo.repository.ReviewRepository;
 import MyImdb.demo.repository.UserRepository;
 import MyImdb.demo.utils.DataBaseTasks;
 import MyImdb.demo.utils.ExcelUser;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import jakarta.servlet.http.HttpServletResponse;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.env.Environment;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -29,18 +25,17 @@ import java.util.Optional;
 
 
 @Service
+@Slf4j
+@RequiredArgsConstructor
 public class UserService {
-    @Autowired
-    UserRepository userRepository;
-    @Autowired
-    ReviewRepository reviewRepository;
-    @Autowired
-    private ObjectMapper objectMapper;
+    private final UserRepository userRepository;
 
-    @Autowired
-    private Environment environment;
+    private final ReviewRepository reviewRepository;
+    private final ObjectMapper objectMapper;
 
-    private static final Logger logger = LoggerFactory.getLogger(UserService.class.getName());
+    private final Environment environment;
+
+    //private static final Logger logger = LoggerFactory.getLogger(UserService.class.getName());
 
     public Optional<User> findUserById(long id){
         return this.userRepository.findById(id);
@@ -57,18 +52,20 @@ public class UserService {
     public ResponseEntity<?> getUserStats(int userId){
         int totalNrMoviesWatched;
         int totalMinutesMoviesWatched;
-        logger.info("Getting user stats for user: " + userId);
-        Optional<User> user = userRepository.findById(1L);
+        log.info("Getting user stats for user: " + userId);
+        Optional<User> user = userRepository.findById((long) userId);
         if(user.isPresent()){
             totalNrMoviesWatched = reviewRepository.nrMoviesWatched(user.get().getId());
             totalMinutesMoviesWatched = reviewRepository.minutesMoviesWatched(user.get().getId());
 
             Map<Integer, Integer> mapYearNrMoviesWatched = getMapYearNrMovies(userId);
 
+            //Create "main" JSON with all stats
             ObjectNode json = objectMapper.createObjectNode();
             json.put("nrMoviesWatched", totalNrMoviesWatched);
             json.put("minutesMoviesWatched", totalMinutesMoviesWatched);
 
+            //create JSON with stats by year
             ArrayNode nrMoviesPerYearJson = objectMapper.createArrayNode();
 
             for(int key: mapYearNrMoviesWatched.keySet()){
@@ -78,6 +75,7 @@ public class UserService {
                 nrMoviesPerYearJson.add(jsonYearCount);
             }
 
+            //set the yearly stats to the main json
             json.set("nrMoviesPerYear", nrMoviesPerYearJson);
 
             return new ResponseEntity<Object>(json, HttpStatus.OK);

@@ -3,6 +3,7 @@ package MyImdb.demo.controller;
 
 import MyImdb.demo.service.UserService;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -15,10 +16,9 @@ import java.util.Date;
 
 @Controller
 @RequestMapping("/api/v1/users")
+@RequiredArgsConstructor
 public class UserController {
-    @Autowired
-    UserService userService;
-
+    private final UserService userService;
 
     //todo testar endpoint
     @GetMapping("/stats/{id}")

@@ -1,15 +1,12 @@
 package MyImdb.demo.controller;
 
-import MyImdb.demo.config.JwtService;
-import MyImdb.demo.model.User;
 import MyImdb.demo.service.MovieService;
 import MyImdb.demo.service.UserService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import jakarta.annotation.security.PermitAll;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.json.JSONException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -17,26 +14,26 @@ import org.springframework.web.bind.annotation.*;
 
 
 @RestController
+@Slf4j
 @RequestMapping("/api/v1/movies")
+@RequiredArgsConstructor
 @PermitAll
 public class MovieController {
-    @Autowired
-    MovieService movieService = new MovieService();
+    private final MovieService movieService;
 
-    @Autowired
-    UserService userService;
+    private final UserService userService;
 
-    private static final Logger logger = LoggerFactory.getLogger(MovieController.class.getName());
+    //private static final Logger logger = LoggerFactory.getLogger(MovieController.class.getName());
 
     @PostMapping("/addMovie")
     public ResponseEntity<?> addMovie(@RequestParam(name="imdb_id") String imdb_id) throws JsonProcessingException, JSONException {
-        logger.info("[POST] - Add movie");
+        log.info("[POST] - Add movie");
         return movieService.addMovie(imdb_id);
     }
 
     @GetMapping("")
     public ResponseEntity<?> getAllMovies(){
-        logger.info("[GET] - Get all movies ");
+        log.info("[GET] - Get all movies ");
 
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         return movieService.getAllMovies(username);
@@ -44,7 +41,7 @@ public class MovieController {
 
     @GetMapping("/{id}")
     public ResponseEntity<?> getMovieById(@PathVariable(name="id") int id) throws JsonProcessingException {
-        logger.info("[GET] - Get movie with the id: " + id);
+        log.info("[GET] - Get movie with the id: " + id);
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         int userId = userService.getUserIdWithUsername(username);
         if(userId == -1){

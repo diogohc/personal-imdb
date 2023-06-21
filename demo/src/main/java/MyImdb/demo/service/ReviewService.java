@@ -9,7 +9,7 @@ import MyImdb.demo.repository.ReviewRepository;
 import MyImdb.demo.repository.UserRepository;
 import MyImdb.demo.utils.UserSessionData;
 import jakarta.transaction.Transactional;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,18 +21,15 @@ import java.util.Vector;
 
 
 @Service
+@RequiredArgsConstructor
 public class ReviewService {
-    @Autowired
-    ReviewRepository reviewRepository;
+    private final ReviewRepository reviewRepository;
 
-    @Autowired
-    UserRepository userRepository;
+    private final UserRepository userRepository;
 
-    @Autowired
-    MovieRepository movieRepository;
+    private final MovieRepository movieRepository;
 
-    @Autowired
-    UserService userService;
+    private final UserService userService;
 
     @Transactional
     public ResponseEntity<?> insertReview(String username, ReviewDto reviewdto){

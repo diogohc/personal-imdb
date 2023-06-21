@@ -2,24 +2,21 @@ package MyImdb.demo.service;
 
 import MyImdb.demo.dto.MovieDetailDto;
 import MyImdb.demo.dto.MovieDto;
-import MyImdb.demo.dto.ReviewDto;
 import MyImdb.demo.gson.MovieGson;
 import MyImdb.demo.model.Movie;
 import MyImdb.demo.model.Review;
 import MyImdb.demo.repository.MovieRepository;
 import MyImdb.demo.repository.ReviewRepository;
 import MyImdb.demo.utils.GetData;
-import MyImdb.demo.utils.UserData;
 import MyImdb.demo.utils.UserSessionData;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -28,15 +25,15 @@ import java.sql.Timestamp;
 import java.util.*;
 
 @Service
+@Slf4j
+@RequiredArgsConstructor
 public class MovieService {
 
-    private static final Logger logger = LoggerFactory.getLogger(MovieService.class.getName());
+    //private static final Logger logger = LoggerFactory.getLogger(MovieService.class.getName());
 
-    @Autowired
-    MovieRepository movieRepository;
+    private final MovieRepository movieRepository;
 
-    @Autowired
-    ReviewRepository reviewRepository;
+    private final ReviewRepository reviewRepository;
 
 
 
@@ -54,7 +51,7 @@ public class MovieService {
         if(!jsonResponse.getString("Type").equalsIgnoreCase("movie")){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Only accept movies (for now)");
         }
-        logger.info("Adding the movie with the imdb_id " + imdbId +" to the database");
+        log.info("Adding the movie with the imdb_id " + imdbId +" to the database");
         MovieGson movieGson = objectMapper.readValue(stringResponse, MovieGson.class);
         return insertMovie(movieGson);
     }
