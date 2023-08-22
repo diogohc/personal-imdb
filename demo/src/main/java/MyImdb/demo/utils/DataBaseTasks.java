@@ -12,6 +12,11 @@ public class DataBaseTasks {
         closeConnection(conn);
     }
 
+    public static void close(PreparedStatement pstmt, Connection conn){
+        closePreparedStatement(pstmt);
+        closeConnection(conn);
+    }
+
     public static void closeResultSet(ResultSet rs){
         try{
             if(rs != null){

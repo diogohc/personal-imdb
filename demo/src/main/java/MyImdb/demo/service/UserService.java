@@ -1,6 +1,6 @@
 package MyImdb.demo.service;
 
-import MyImdb.demo.model.User;
+import MyImdb.demo.entity.User;
 import MyImdb.demo.repository.ReviewRepository;
 import MyImdb.demo.repository.UserRepository;
 import MyImdb.demo.utils.DataBaseTasks;
@@ -49,9 +49,10 @@ public class UserService {
         return this.userRepository.findAll();
     }
 
-    public ResponseEntity<?> getUserStats(int userId){
+    public ObjectNode getUserStats(int userId){
         int totalNrMoviesWatched;
         int totalMinutesMoviesWatched;
+        ObjectNode json = null;
         log.info("Getting user stats for user: " + userId);
         Optional<User> user = userRepository.findById((long) userId);
         if(user.isPresent()){
@@ -61,7 +62,7 @@ public class UserService {
             Map<Integer, Integer> mapYearNrMoviesWatched = getMapYearNrMovies(userId);
 
             //Create "main" JSON with all stats
-            ObjectNode json = objectMapper.createObjectNode();
+            json = objectMapper.createObjectNode();
             json.put("nrMoviesWatched", totalNrMoviesWatched);
             json.put("minutesMoviesWatched", totalMinutesMoviesWatched);
 
@@ -78,9 +79,9 @@ public class UserService {
             //set the yearly stats to the main json
             json.set("nrMoviesPerYear", nrMoviesPerYearJson);
 
-            return new ResponseEntity<Object>(json, HttpStatus.OK);
+            return json;
         }
-        return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+        return null;
     }
 
     public void exportExcel(HttpServletResponse response) throws IOException {
@@ -89,9 +90,14 @@ public class UserService {
         excelExporter.export(response);
     }
 
-    public int getUserIdWithUsername(String username){
+    public Long getUserIdWithUsername(String username){
         Optional<User> user =  userRepository.findByUsername(username);
-        return user.map(value -> value.getId().intValue()).orElse(-1);
+
+        if(user.isPresent()){
+            return user.get().getId();
+        }else {
+            return (long) -1;
+        }
     }
 
 

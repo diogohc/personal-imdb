@@ -1,6 +1,6 @@
 package MyImdb.demo.repository;
 
-import MyImdb.demo.model.User;
+import MyImdb.demo.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.web.context.annotation.ApplicationScope;

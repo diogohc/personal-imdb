@@ -1,4 +1,4 @@
-package MyImdb.demo.model;
+package MyImdb.demo.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
@@ -7,7 +7,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.sql.Date;
 import java.sql.Timestamp;
 import java.util.List;
 
