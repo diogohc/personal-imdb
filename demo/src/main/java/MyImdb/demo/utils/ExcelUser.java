@@ -1,6 +1,6 @@
 package MyImdb.demo.utils;
 
-import MyImdb.demo.model.User;
+import MyImdb.demo.entity.User;
 import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.poi.ss.usermodel.Cell;

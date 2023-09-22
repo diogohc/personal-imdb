@@ -1,14 +1,10 @@
 package MyImdb.demo.service;
 
-import MyImdb.demo.dto.MovieDetailDto;
-import MyImdb.demo.dto.MovieDto;
+import MyImdb.demo.dto.MovieWithRating;
 import MyImdb.demo.gson.MovieGson;
-import MyImdb.demo.model.Movie;
-import MyImdb.demo.model.Review;
+import MyImdb.demo.entity.Movie;
 import MyImdb.demo.repository.MovieRepository;
-import MyImdb.demo.repository.ReviewRepository;
 import MyImdb.demo.utils.GetData;
-import MyImdb.demo.utils.UserSessionData;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -17,10 +13,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-
 import java.sql.Timestamp;
 import java.util.*;
 
@@ -29,16 +25,13 @@ import java.util.*;
 @RequiredArgsConstructor
 public class MovieService {
 
-    //private static final Logger logger = LoggerFactory.getLogger(MovieService.class.getName());
-
     private final MovieRepository movieRepository;
 
-    private final ReviewRepository reviewRepository;
-
-
+    @Value("${OMDB_API_KEY}")
+    private String apiKey;
 
     public ResponseEntity<?> addMovie(String imdbId) throws JSONException, JsonProcessingException {
-        String[] url = {"https://www.omdbapi.com/?i=", "&apikey=a9c633d3"};
+        String[] url = {"https://www.omdbapi.com/?i=", "&apikey=" +apiKey};
         ObjectMapper objectMapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         String stringResponse="";
         GetData getData = new GetData();
@@ -77,6 +70,8 @@ public class MovieService {
         return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
     }
 
+    /*
+    NAO APAGAR. TEM EXEMPLO DO MAPMOVIEIDRATING QUE E POPULADO QUANDO O USER AUTENTICA
     public ResponseEntity<?> getAllMovies(String username) {
 
         List<Movie> moviesList = movieRepository.findAll();
@@ -94,19 +89,32 @@ public class MovieService {
         return new ResponseEntity<Object>(movies, HttpStatus.OK);
     }
 
-    public ResponseEntity<?> getMovieById(int id, int userId) throws JsonProcessingException {
-        int userRating = -1;
-        Optional<Movie> m = movieRepository.findById((long) id);
-        Optional<Review> review = reviewRepository.findReviewByMovieIdAndUserId(id, userId);
-        if(review.isPresent()){
-            userRating = review.get().getRating();
+     */
+
+
+
+    public MovieWithRating getMovieById(Long movieId, Long userId) {
+        List<Object[]> movieRating = movieRepository.findMovieWithRatingByMovieIdAndUserId(movieId, userId);
+
+        if (movieRating != null && movieRating.size() > 0) {
+            Movie movie = (Movie) movieRating.get(0)[0];
+            Integer rating = (Integer) movieRating.get(0)[1];
+            return new MovieWithRating(movie, rating);
         }
-        if(m.isPresent()){
-            Movie movie = m.get();
-            MovieDetailDto movieDetailDto = new MovieDetailDto(movie.getId().intValue(), movie.getTitle(), movie.getYear(), movie.getPlot(), movie.getDirector(), movie.getWriter(),
-                    movie.getCountry(), movie.getPoster(), movie.getRuntime(), movie.getImdbRating(), userRating);
-            return new ResponseEntity<Object>(movieDetailDto, HttpStatus.OK);
-        }
-        return new ResponseEntity<Object>(null, HttpStatus.NOT_FOUND);
+        return null;
     }
+
+
+    public List<MovieWithRating> getAllMovies(Long userId){
+        List<Object[]> moviesWithRatings = movieRepository.findMoviesWithRatingByUserId(userId);
+        List<MovieWithRating> lstMovies =  new ArrayList<>();
+
+        for (Object[] movieRating : moviesWithRatings) {
+            Movie movie = (Movie) movieRating[0];
+            Integer rating = (Integer) movieRating[1];
+            lstMovies.add(new MovieWithRating(movie, rating));
+        }
+        return lstMovies;
+    }
+
 }

@@ -1,9 +1,9 @@
 package MyImdb.demo.service;
 
 import MyImdb.demo.dto.ReviewDto;
-import MyImdb.demo.model.Movie;
-import MyImdb.demo.model.Review;
-import MyImdb.demo.model.User;
+import MyImdb.demo.entity.Movie;
+import MyImdb.demo.entity.Review;
+import MyImdb.demo.entity.User;
 import MyImdb.demo.repository.MovieRepository;
 import MyImdb.demo.repository.ReviewRepository;
 import MyImdb.demo.repository.UserRepository;
@@ -33,9 +33,9 @@ public class ReviewService {
 
     @Transactional
     public ResponseEntity<?> insertReview(String username, ReviewDto reviewdto){
-        int userId = userService.getUserIdWithUsername(username);
+        Long userId = userService.getUserIdWithUsername(username);
         Optional<Movie> movie = movieRepository.findById((long) reviewdto.getMovieId());
-        Optional<User> user = userRepository.findById((long) userId);
+        Optional<User> user = userRepository.findById(userId);
 
         if(user.isPresent() && movie.isPresent()){
             Review review = new Review(user.get(), movie.get(), reviewdto.getRating(), reviewdto.getDateAdded() == null ? new Timestamp(System.currentTimeMillis()) : reviewdto.getDateAdded());
@@ -52,7 +52,7 @@ public class ReviewService {
         return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
     }
 
-    public ResponseEntity<?> deleteReview(int movieId, int userId) {
+    public ResponseEntity<?> deleteReview(Long movieId, Long userId) {
         //todo editar query. TESTAR ANTES
         Optional<Review> rev = reviewRepository.findReviewByMovieIdAndUserId(movieId, userId);
         if(rev.isPresent()){
@@ -63,9 +63,9 @@ public class ReviewService {
         return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).build();
     }
 
-    public Vector<ReviewDto> listUserReviews(String username) {
+    public Vector<ReviewDto> listUserReviews(Long id) {
 
-        Optional<User> user = userRepository.findByUsername(username);
+        Optional<User> user = userRepository.findById(id);
         if(user.isPresent()) {
 
             List<Review> reviewsList = reviewRepository.getReviewsByUserId(user.get().getId().intValue(), Sort.by("date_added"));
@@ -98,5 +98,13 @@ public class ReviewService {
             }
         }
         return ResponseEntity.status(HttpStatus.NOT_MODIFIED).body("not updated");
+    }
+
+
+    //test new movieRep querys
+    public List<Review> getAllMoviesReviewedByUser(Long userId){
+        List<Review> moviesWithUserReviews = reviewRepository.findAllMoviesWithUserReviews(userId);
+
+        return moviesWithUserReviews;
     }
 }

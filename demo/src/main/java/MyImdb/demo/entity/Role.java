@@ -1,4 +1,4 @@
-package MyImdb.demo.model;
+package MyImdb.demo.entity;
 
 public enum Role {
     USER,

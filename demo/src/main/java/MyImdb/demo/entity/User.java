@@ -1,5 +1,6 @@
-package MyImdb.demo.model;
+package MyImdb.demo.entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -30,6 +31,7 @@ public class User implements UserDetails {
     @Enumerated(EnumType.STRING)
     private Role role;
     @OneToMany(mappedBy = "user")
+    @JsonManagedReference // Use @JsonManagedReference to handle the circular reference
     private List<Review> review;
 
     public User(String username, String password) {

@@ -1,6 +1,7 @@
-package MyImdb.demo.model;
+package MyImdb.demo.entity;
 
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -22,6 +23,7 @@ public class Review {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @ManyToOne
+    @JsonBackReference // Use @JsonBackReference to handle the circular reference
     private User user;
     @ManyToOne
     @JsonManagedReference
