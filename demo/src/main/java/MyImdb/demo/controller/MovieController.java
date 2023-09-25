@@ -3,6 +3,7 @@ package MyImdb.demo.controller;
 import MyImdb.demo.service.MovieService;
 import MyImdb.demo.service.UserService;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.annotation.security.PermitAll;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,12 +26,14 @@ public class MovieController {
 
     //private static final Logger logger = LoggerFactory.getLogger(MovieController.class.getName());
 
+    @Operation(summary = "Add a new movie")
     @PostMapping("/addMovie")
     public ResponseEntity<?> addMovie(@RequestParam(name="imdb_id") String imdb_id) throws JsonProcessingException, JSONException {
         log.info("[POST] - Add movie");
         return movieService.addMovie(imdb_id);
     }
 
+    @Operation(summary = "Get list of all movies")
     @GetMapping("")
     public ResponseEntity<?> getAllMovies(){
         log.info("[GET] - Get all movies ");
@@ -39,6 +42,7 @@ public class MovieController {
         return movieService.getAllMovies(username);
     }
 
+    @Operation(summary = "Get a movie by ID")
     @GetMapping("/{id}")
     public ResponseEntity<?> getMovieById(@PathVariable(name="id") int id) throws JsonProcessingException {
         log.info("[GET] - Get movie with the id: " + id);

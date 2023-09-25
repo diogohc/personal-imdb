@@ -25,6 +25,7 @@ public class ReviewController {
     private final ReviewService reviewService;
 
 
+    //TODO @Operation(summary = "Add new category")
     @PostMapping("/addReview")
     public ResponseEntity<?> addReview(@RequestBody ReviewDto reviewdto){
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
