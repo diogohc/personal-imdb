@@ -23,9 +23,7 @@ public class MovieController {
     private final MovieService movieService;
 
     private final UserService userService;
-
-    //private static final Logger logger = LoggerFactory.getLogger(MovieController.class.getName());
-
+    
     @Operation(summary = "Add a new movie")
     @PostMapping("/addMovie")
     public ResponseEntity<?> addMovie(@RequestParam(name="imdb_id") String imdb_id) throws JsonProcessingException, JSONException {
