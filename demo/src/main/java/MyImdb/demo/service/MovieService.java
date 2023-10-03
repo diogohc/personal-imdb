@@ -2,13 +2,14 @@ package MyImdb.demo.service;
 
 import MyImdb.demo.dto.MovieDetailDto;
 import MyImdb.demo.dto.MovieDto;
+import MyImdb.demo.enums.AddExternalMovieStatus;
 import MyImdb.demo.gson.MovieGson;
 import MyImdb.demo.mapper.MovieMapper;
 import MyImdb.demo.model.Movie;
 import MyImdb.demo.model.Review;
 import MyImdb.demo.repository.MovieRepository;
 import MyImdb.demo.repository.ReviewRepository;
-import MyImdb.demo.utils.GetData;
+import MyImdb.demo.utils.GetMovieData;
 import MyImdb.demo.utils.UserSessionData;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -29,8 +30,11 @@ import java.util.*;
 @Slf4j
 @RequiredArgsConstructor
 public class MovieService {
-
-    //private static final Logger logger = LoggerFactory.getLogger(MovieService.class.getName());
+    public static final int STATUS_MOVIE_ALREADY_EXISTS_IN_DB = 1;
+    public static final int STATUS_MOVIE_NOT_SAVED = 2;
+    public static final int STATUS_MOVIE_SAVED_SUCCESSFULLY = 3;
+    public static final int STATUS_INCORRECT_IMDB_ID = 4;
+    public static final int STATUS_ONLY_ACCEPT_MOVIES = 5;
 
     private final MovieRepository movieRepository;
 
@@ -38,19 +42,19 @@ public class MovieService {
 
 
 
-    public ResponseEntity<?> addMovie(String imdbId) throws JSONException, JsonProcessingException {
+    public AddExternalMovieStatus addMovie(String imdbId) throws JSONException, JsonProcessingException {
         String[] url = {"https://www.omdbapi.com/?i=", "&apikey=a9c633d3"};
         ObjectMapper objectMapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         String stringResponse="";
-        GetData getData = new GetData();
-        stringResponse = getData.getMovies(url[0] + imdbId + url[1]);
+        GetMovieData getMovieData = new GetMovieData();
+        stringResponse = getMovieData.getMovies(url[0] + imdbId + url[1]);
 
         JSONObject jsonResponse = new JSONObject(stringResponse);
         if(jsonResponse.getString("Response").equals("False")){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Incorrect IMDb ID.");
+            return AddExternalMovieStatus.INCORRECT_IMDB_ID;
         }
         if(!jsonResponse.getString("Type").equalsIgnoreCase("movie")){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Only accept movies (for now)");
+            return AddExternalMovieStatus.ONLY_ACCEPT_MOVIES;
         }
         log.info("Adding the movie with the imdb_id " + imdbId +" to the database");
         MovieGson movieGson = objectMapper.readValue(stringResponse, MovieGson.class);
@@ -58,7 +62,7 @@ public class MovieService {
     }
 
     @Transactional
-    public ResponseEntity<?> insertMovie(MovieGson movieGson){
+    public AddExternalMovieStatus insertMovie(MovieGson movieGson){
         Movie m = new Movie(movieGson.getTitle(), Integer.parseInt(movieGson.getYear()), movieGson.getPlot(),
                 movieGson.getDirector(), movieGson.getWriter(), movieGson.getCountry(), movieGson.getPoster(),
                 movieGson.getImdbID(), Integer.parseInt(movieGson.getRuntime().split(" ")[0]),
@@ -67,15 +71,15 @@ public class MovieService {
 
         //if movie already exists in the DB
         if(movieRepository.findByImdbId(m.getImdbId()).isPresent()){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Movie Already Exists");
+            return AddExternalMovieStatus.MOVIE_ALREADY_EXISTS_IN_DB;
         }
 
         movieRepository.save(m);
 
         if(movieRepository.existsById(m.getId())){
-            return ResponseEntity.status(HttpStatus.CREATED).body(m);
+            return AddExternalMovieStatus.MOVIE_SAVED_SUCCESSFULLY;
         }
-        return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
+        return AddExternalMovieStatus.MOVIE_NOT_SAVED;
     }
 
     public ResponseEntity<?> getAllMovies(String username) {

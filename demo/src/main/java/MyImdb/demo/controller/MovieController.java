@@ -1,5 +1,6 @@
 package MyImdb.demo.controller;
 
+import MyImdb.demo.enums.AddExternalMovieStatus;
 import MyImdb.demo.service.MovieService;
 import MyImdb.demo.service.UserService;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -28,7 +29,32 @@ public class MovieController {
     @PostMapping("/addMovie")
     public ResponseEntity<?> addMovie(@RequestParam(name="imdb_id") String imdb_id) throws JsonProcessingException, JSONException {
         log.info("[POST] - Add movie");
-        return movieService.addMovie(imdb_id);
+        AddExternalMovieStatus status = movieService.addMovie(imdb_id);
+        String responseMessage = "";
+        HttpStatus responseStatus = null;
+
+        switch(status) {
+            case MOVIE_ALREADY_EXISTS_IN_DB:
+                responseMessage ="Movie already exists in the database";
+                responseStatus = HttpStatus.BAD_REQUEST;
+                break;
+            case MOVIE_NOT_SAVED:
+                responseMessage ="Error Saving Movie";
+                responseStatus = HttpStatus.BAD_REQUEST;
+                break;
+            case INCORRECT_IMDB_ID:
+                responseMessage ="Incorrect IMDB ID";
+                responseStatus = HttpStatus.BAD_REQUEST;
+                break;
+            case ONLY_ACCEPT_MOVIES:
+                responseMessage ="The application only accepts movie IDS";
+                responseStatus = HttpStatus.BAD_REQUEST;
+                break;
+            default:
+                responseMessage ="Movie Created";
+                responseStatus = HttpStatus.OK;
+        }
+        return new ResponseEntity<>(responseMessage,responseStatus);
     }
 
     @Operation(summary = "Get list of all movies")

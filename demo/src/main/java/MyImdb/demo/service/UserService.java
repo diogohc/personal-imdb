@@ -51,19 +51,22 @@ public class UserService {
         return this.userRepository.findAll();
     }
 
-    public ResponseEntity<?> getUserStats(int userId){
+    public ObjectNode getUserStats(int userId){
         int totalNrMoviesWatched;
         int totalMinutesMoviesWatched;
-        log.info("Getting user stats for user: " + userId);
+        ObjectNode json = null;
+
         Optional<User> user = userRepository.findById((long) userId);
         if(user.isPresent()){
+            log.info("Getting user stats for user: " + userId);
+
             totalNrMoviesWatched = reviewRepository.nrMoviesWatched(user.get().getId());
             totalMinutesMoviesWatched = reviewRepository.minutesMoviesWatched(user.get().getId());
 
             Map<Integer, Integer> mapYearNrMoviesWatched = getMapYearNrMovies(userId);
 
             //Create "main" JSON with all stats
-            ObjectNode json = objectMapper.createObjectNode();
+            json = objectMapper.createObjectNode();
             json.put("nrMoviesWatched", totalNrMoviesWatched);
             json.put("minutesMoviesWatched", totalMinutesMoviesWatched);
 
@@ -79,10 +82,8 @@ public class UserService {
 
             //set the yearly stats to the main json
             json.set("nrMoviesPerYear", nrMoviesPerYearJson);
-
-            return new ResponseEntity<Object>(json, HttpStatus.OK);
         }
-        return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+        return json;
     }
 
     public void exportExcel(HttpServletResponse response) throws IOException {

@@ -1,6 +1,8 @@
 package MyImdb.demo.controller;
 
 
+import MyImdb.demo.config.JwtService;
+import MyImdb.demo.dto.MovieDto;
 import MyImdb.demo.dto.ReviewDto;
 import MyImdb.demo.service.ReviewService;
 
@@ -14,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Vector;
 
 
@@ -24,6 +27,8 @@ import java.util.Vector;
 public class ReviewController {
 
     private final ReviewService reviewService;
+
+    private final JwtService jwtService;
 
 
     @Operation(summary = "Add new review")
@@ -40,7 +45,7 @@ public class ReviewController {
         return reviewService.deleteReview(movieId, userId);
     }
 
-    @Operation(summary = "List user's reviews")
+/*    @Operation(summary = "List user's reviews")
     @GetMapping("")
     public ResponseEntity<?> listUserReviews() throws JSONException {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -50,7 +55,7 @@ public class ReviewController {
             return new ResponseEntity<Object>(reviews, HttpStatus.OK);
         }
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-    }
+    }*/
 
     @Operation(summary = "Edit a review")
     @PutMapping("/editReview")
@@ -58,5 +63,14 @@ public class ReviewController {
         log.info("[PUT] - Edit review. Review Dto: " +reviewDto);
 
         return reviewService.editReview(reviewDto);
+    }
+
+    @Operation(summary = "List user's reviews")
+    @GetMapping("")
+    public ResponseEntity<?> listUserReviews(@RequestHeader("Authorization") String authorizationHeader){
+        Long userId = jwtService.extractUserId(authorizationHeader);
+        List<MovieDto> userReviews = reviewService.listUserReviewsByUserId(Math.toIntExact(userId));
+        log.info(String.format("[GET] - Get userId: %s reviews", userId));
+        return new ResponseEntity<Object>(userReviews, HttpStatus.OK);
     }
 }

@@ -2,10 +2,7 @@ package MyImdb.demo.config;
 
 import MyImdb.demo.model.Role;
 import MyImdb.demo.repository.UserRepository;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.MalformedJwtException;
-import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
@@ -50,6 +47,8 @@ public class JwtService {
             claims = Jwts.parserBuilder().setSigningKey(getSignInKey()).build().parseClaimsJws(token).getBody();
         } catch (MalformedJwtException e){
             log.error("Malformed JWT");
+        } catch (ExpiredJwtException e1){
+            log.error("Expired JWT");
         }
 
         return claims;
