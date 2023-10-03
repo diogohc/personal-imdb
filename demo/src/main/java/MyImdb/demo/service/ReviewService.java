@@ -1,6 +1,9 @@
 package MyImdb.demo.service;
 
+import MyImdb.demo.dto.MovieDto;
 import MyImdb.demo.dto.ReviewDto;
+import MyImdb.demo.exception.ResourceNotFoundException;
+import MyImdb.demo.mapper.ReviewMapper;
 import MyImdb.demo.model.Movie;
 import MyImdb.demo.model.Review;
 import MyImdb.demo.model.User;
@@ -18,6 +21,7 @@ import java.sql.Timestamp;
 import java.util.List;
 import java.util.Optional;
 import java.util.Vector;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -80,6 +84,16 @@ public class ReviewService {
             return reviews;
         }
         return null;
+    }
+
+    public List<MovieDto> listUserReviewsByUserId(int userId){
+        User user = userRepository.findById((long) userId).orElseThrow(
+                () -> new ResourceNotFoundException("User doesn't exist with given id: " + userId)
+        );
+
+        List<Review> lstReviews = reviewRepository.getReviewsByUserId(userId, Sort.by("date_added"));
+
+        return lstReviews.stream().map((review) -> ReviewMapper.mapToMovieDto(review)).collect(Collectors.toList());
     }
 
     @Transactional

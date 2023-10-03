@@ -49,7 +49,7 @@ public class AuthenticationService {
 
         userRepository.save(user);
         logger.info("User "+user.getUsername()+" is registered");
-        String token = jwtService.generateToken(user);
+        String token = jwtService.generateToken(user, user.getId(), user.getRole());
         logger.info("Registration generated JWT: "+token);
         return AuthenticationResponse.builder().token(token).build();
     }
@@ -60,14 +60,10 @@ public class AuthenticationService {
         Optional<User> user = userRepository.findByUsername(request.getUsername());
 
         //if user doesnt' exit
-        if(user.isEmpty()){
-            return AuthenticationResponse.builder().response("User doesn't exist").build();
+        if(user.isEmpty() || !passwordEncoder.matches(request.getPassword(), user.get().getPassword())){
+            return AuthenticationResponse.builder().response("Wrong credentials").build();
         }
 
-        //if password is wrong
-        if(!passwordEncoder.matches(request.getPassword(), user.get().getPassword())){
-            return AuthenticationResponse.builder().response("Wrong password").build();
-        }
 
         //Populate User Data
         UserData userData = new UserData();
@@ -76,9 +72,9 @@ public class AuthenticationService {
         UserSessionData userSessionData = new UserSessionData();
         userSessionData.setUserData(userData);
 
-        logger.info("User "+user.get().getUsername()+" logged in");
+        logger.info("User \""+user.get().getUsername()+"\" logged in");
         //generate token and return it
-        String token = jwtService.generateToken(user.get());
+        String token = jwtService.generateToken(user.get(), user.get().getId(), user.get().getRole());
         logger.info("Authentication generated JWT: "+token);
 
         return AuthenticationResponse.builder().token(token).id(Math.toIntExact(user.get().getId())).role(user.get().getRole()).build();

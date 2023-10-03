@@ -4,6 +4,7 @@ package MyImdb.demo.controller;
 import MyImdb.demo.dto.ReviewDto;
 import MyImdb.demo.service.ReviewService;
 
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONException;
@@ -25,19 +26,21 @@ public class ReviewController {
     private final ReviewService reviewService;
 
 
-    //TODO @Operation(summary = "Add new category")
+    @Operation(summary = "Add new review")
     @PostMapping("/addReview")
     public ResponseEntity<?> addReview(@RequestBody ReviewDto reviewdto){
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         return reviewService.insertReview(username, reviewdto);
     }
 
+    @Operation(summary = "Delete a review")
     @DeleteMapping("/deleteReview")
     public ResponseEntity<?> deleteReview(@RequestParam(name="movieId") int movieId, @RequestParam(name="userId") int userId){
         log.info("[DELETE] - Delete review with movieId= "+movieId+" and userId= " +userId);
         return reviewService.deleteReview(movieId, userId);
     }
 
+    @Operation(summary = "List user's reviews")
     @GetMapping("")
     public ResponseEntity<?> listUserReviews() throws JSONException {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -49,6 +52,7 @@ public class ReviewController {
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
+    @Operation(summary = "Edit a review")
     @PutMapping("/editReview")
     public ResponseEntity<?> updateReview(@RequestBody ReviewDto reviewDto){
         log.info("[PUT] - Edit review. Review Dto: " +reviewDto);

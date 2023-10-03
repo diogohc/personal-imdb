@@ -3,6 +3,7 @@ package MyImdb.demo.service;
 import MyImdb.demo.dto.MovieDetailDto;
 import MyImdb.demo.dto.MovieDto;
 import MyImdb.demo.gson.MovieGson;
+import MyImdb.demo.mapper.MovieMapper;
 import MyImdb.demo.model.Movie;
 import MyImdb.demo.model.Review;
 import MyImdb.demo.repository.MovieRepository;
@@ -108,5 +109,20 @@ public class MovieService {
             return new ResponseEntity<Object>(movieDetailDto, HttpStatus.OK);
         }
         return new ResponseEntity<Object>(null, HttpStatus.NOT_FOUND);
+    }
+
+    //TODO testar no controller este metodo para ir buscar todos os filmes
+    //permitir requests sem jwt ao movie controller. e invocar no postman com /userId
+    //se vier o pretendido, depois fazer no controller a parte de retrieve o userID do jwt
+    public List<MovieDto> getAllMovies(Long userId){
+        List<Object[]> moviesWithRatings = movieRepository.findMoviesWithRatingByUserId(userId);
+        List<MovieDto> lstMovies =  new ArrayList<>();
+
+        for (Object[] movieRating : moviesWithRatings) {
+            Movie movie = (Movie) movieRating[0];
+            Integer rating = (Integer) movieRating[1];
+            lstMovies.add(MovieMapper.mapToMovieDto(movie, rating));
+        }
+        return lstMovies;
     }
 }

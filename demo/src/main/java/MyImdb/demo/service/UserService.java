@@ -1,5 +1,7 @@
 package MyImdb.demo.service;
 
+import MyImdb.demo.dto.UserDetail;
+import MyImdb.demo.exception.ResourceNotFoundException;
 import MyImdb.demo.model.User;
 import MyImdb.demo.repository.ReviewRepository;
 import MyImdb.demo.repository.UserRepository;
@@ -125,6 +127,13 @@ public class UserService {
             DataBaseTasks.close(rs, pstmt, conn);
         }
         return mapYearNrMovies;
+    }
+
+
+    public UserDetail getUserById(long userId){
+        User user = userRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("User doesn't exist with given id: " + userId));
+
+        return new UserDetail(Math.toIntExact(user.getId()), user.getUsername(), user.getRole());
     }
 
 }
