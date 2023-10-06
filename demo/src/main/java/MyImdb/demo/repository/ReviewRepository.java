@@ -33,6 +33,6 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
     @Query(value = "select SUM(m.runtime) from Movie m inner join Review r on r.movie.id=m.id where r.user.id=?1")
     int minutesMoviesWatched(long userId);
 
-    @Query(value = "select r from Review r INNER JOIN Movie m ON r.movie.id = m.id  where r.user.id= ?1 order by ?2")
-    Page<Review> getReviewsByUserIdWithPagination(int userId, String orderBy, Pageable pageable);
+    @Query(value = "select r from Review r INNER JOIN Movie m ON r.movie.id = m.id  and r.user.id= ?1")
+    Page<Object[]> getReviewsByUserIdWithPagination(Long userId, Pageable pageable);
 }

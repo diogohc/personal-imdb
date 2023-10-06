@@ -2,7 +2,10 @@ package MyImdb.demo.repository;
 
 
 import MyImdb.demo.model.Movie;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.web.context.annotation.ApplicationScope;
 
@@ -22,4 +25,8 @@ public interface MovieRepository extends JpaRepository<Movie, Long> {
     //get the movie + rating
     @Query("SELECT m, r.rating FROM Movie m LEFT JOIN Review r ON m.id = r.movie.id AND r.user.id = ?2 WHERE m.id = ?1")
     List<Object[]> findMovieWithRatingByMovieIdAndUserId(Long movieId, Long userId);
+
+
+    @Query("SELECT m, r.rating FROM Movie m LEFT JOIN Review r ON m.id = r.movie.id AND r.user.id = ?1")
+    Page<Object[]> findMoviesWithUserRatings(Long userId, Pageable pageable);
 }

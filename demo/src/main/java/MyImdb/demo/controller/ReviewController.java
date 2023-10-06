@@ -67,10 +67,12 @@ public class ReviewController {
 
     @Operation(summary = "List user's reviews")
     @GetMapping("")
-    public ResponseEntity<?> listUserReviews(@RequestHeader("Authorization") String authorizationHeader){
+    public ResponseEntity<?> listUserReviews(@RequestHeader("Authorization") String authorizationHeader,
+                                             @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int pageSize,
+                                             @RequestParam(defaultValue = "date_added") String sortBy, @RequestParam(defaultValue = "desc") String ascOrDesc){
         Long userId = jwtService.extractUserId(authorizationHeader);
-        List<MovieDto> userReviews = reviewService.listUserReviewsByUserId(Math.toIntExact(userId));
-        log.info(String.format("[GET] - Get userId: %s reviews", userId));
+        List<MovieDto> userReviews = reviewService.listUserReviewsPaginatedByUserId(userId, page, pageSize, sortBy, ascOrDesc);
+        log.info("[GET] - Get reviews for user with id {}", userId);
         return new ResponseEntity<Object>(userReviews, HttpStatus.OK);
     }
 }

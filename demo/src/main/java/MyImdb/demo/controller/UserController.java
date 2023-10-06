@@ -20,6 +20,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.File;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -63,6 +64,21 @@ public class UserController {
         request.getSession().invalidate();
         log.info("LOGOUT");
         return new ResponseEntity<>(null, HttpStatus.OK);
+    }
+
+    @PostMapping("/import")
+    @Operation(summary = "Import user's imdb ratings csv file to the application. Insert the movie in the DB if don't exist" +
+            "and creates the rating object for the movie, based on the user")
+    public ResponseEntity<?> importImdbInfo(
+            @Parameter(description = "JWT Token", required = true, example = "Bearer <token>")String authorizationHeader
+    ){
+        //somehow get the file from the request
+        File f = new File("");
+        Long userId = jwtService.extractUserId(authorizationHeader);
+
+        userService.importUserRatingsInfo(f, userId);
+
+        return null;
     }
 
     @GetMapping("/export")

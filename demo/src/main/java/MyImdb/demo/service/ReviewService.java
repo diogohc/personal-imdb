@@ -3,6 +3,7 @@ package MyImdb.demo.service;
 import MyImdb.demo.dto.MovieDto;
 import MyImdb.demo.dto.ReviewDto;
 import MyImdb.demo.exception.ResourceNotFoundException;
+import MyImdb.demo.mapper.MovieMapper;
 import MyImdb.demo.mapper.ReviewMapper;
 import MyImdb.demo.model.Movie;
 import MyImdb.demo.model.Review;
@@ -13,11 +14,15 @@ import MyImdb.demo.repository.UserRepository;
 import MyImdb.demo.utils.UserSessionData;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Vector;
@@ -94,6 +99,26 @@ public class ReviewService {
         List<Review> lstReviews = reviewRepository.getReviewsByUserId(userId, Sort.by("date_added"));
 
         return lstReviews.stream().map((review) -> ReviewMapper.mapToMovieDto(review)).collect(Collectors.toList());
+    }
+
+
+    public List<MovieDto> listUserReviewsPaginatedByUserId(Long userId, int page, int pageSize, String sortBy, String ascOrDesc){
+
+        Sort.Direction direction = ascOrDesc.equals("asc") ? Sort.Direction.ASC : Sort.Direction.DESC;
+        Pageable pageable = PageRequest.of(page, pageSize, Sort.by(direction, sortBy));
+
+        Page<Object[]> pagesMoviesWithRatings = reviewRepository.getReviewsByUserIdWithPagination(userId, pageable);
+        List<Object[]> lstMoviesWithRatings = pagesMoviesWithRatings.getContent();
+
+        List<MovieDto> lstMovies =  new ArrayList<>();
+
+        for (Object[] movieRating : lstMoviesWithRatings) {
+            Movie movie = (Movie) movieRating[0];
+            Integer rating = (Integer) movieRating[1];
+            lstMovies.add(MovieMapper.mapToMovieDto(movie, rating));
+        }
+
+        return lstMovies;
     }
 
     @Transactional

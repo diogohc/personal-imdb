@@ -19,6 +19,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -99,6 +103,7 @@ public class MovieService {
         return new ResponseEntity<Object>(movies, HttpStatus.OK);
     }
 
+    //TODO usar a query para ir buscar o filme + review (inner join) como esta na listagem em vez de fazer 2 gets
     public ResponseEntity<?> getMovieById(int id, int userId) throws JsonProcessingException {
         int userRating = -1;
         Optional<Movie> m = movieRepository.findById((long) id);
@@ -127,6 +132,31 @@ public class MovieService {
             Integer rating = (Integer) movieRating[1];
             lstMovies.add(MovieMapper.mapToMovieDto(movie, rating));
         }
+        return lstMovies;
+    }
+
+    public Movie getMovieByImdbID(String imdbID){
+        Optional<Movie> movie = movieRepository.findByImdbId(imdbID);
+
+        return movie.orElse(null);
+    }
+
+    public List<MovieDto> getMoviesWithUserRatingsPaginated(Long userId, int page, int pageSize, String sortBy, String ascOrDesc) {
+
+        Sort.Direction direction = ascOrDesc.equals("asc") ? Sort.Direction.ASC : Sort.Direction.DESC;
+        Pageable pageable = PageRequest.of(page, pageSize, Sort.by(direction, sortBy));
+
+        Page<Object[]> pagesMoviesWithRatings = movieRepository.findMoviesWithUserRatings(userId, pageable);
+        List<Object[]> lstMoviesWithRatings = pagesMoviesWithRatings.getContent();
+
+        List<MovieDto> lstMovies =  new ArrayList<>();
+
+        for (Object[] movieRating : lstMoviesWithRatings) {
+            Movie movie = (Movie) movieRating[0];
+            Integer rating = (Integer) (movieRating[1] == null ? 0 : movieRating[1]);
+            lstMovies.add(MovieMapper.mapToMovieDto(movie, rating));
+        }
+
         return lstMovies;
     }
 }
