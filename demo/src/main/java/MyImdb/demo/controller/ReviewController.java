@@ -39,10 +39,17 @@ public class ReviewController {
     }
 
     @Operation(summary = "Delete a review")
-    @DeleteMapping("/deleteReview")
-    public ResponseEntity<?> deleteReview(@RequestParam(name="movieId") int movieId, @RequestParam(name="userId") int userId){
-        log.info("[DELETE] - Delete review with movieId= "+movieId+" and userId= " +userId);
-        return reviewService.deleteReview(movieId, userId);
+    @DeleteMapping("/deleteReview/{reviewId}")
+    public ResponseEntity<?> deleteReview(@RequestHeader("Authorization") String authorizationHeader,
+                                          @PathVariable(name="reviewId") Long reviewId){
+
+        Long userId = jwtService.extractUserId(authorizationHeader);
+        if(userId == -1){
+            return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
+        }
+
+        log.info("[DELETE] - Delete review with id= {} by user {}",reviewId, userId);
+        return reviewService.deleteReview(reviewId);
     }
 
 /*    @Operation(summary = "List user's reviews")
@@ -66,13 +73,19 @@ public class ReviewController {
     }
 
     @Operation(summary = "List user's reviews")
-    @GetMapping("")
+    @GetMapping("/user/{userId}")
     public ResponseEntity<?> listUserReviews(@RequestHeader("Authorization") String authorizationHeader,
+                                             @PathVariable(name = "userId") Long userId,
                                              @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int pageSize,
                                              @RequestParam(defaultValue = "date_added") String sortBy, @RequestParam(defaultValue = "desc") String ascOrDesc){
-        Long userId = jwtService.extractUserId(authorizationHeader);
+        Long id = jwtService.extractUserId(authorizationHeader);
+
+        if(id == -1){
+            return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
+        }
+
         List<MovieDto> userReviews = reviewService.listUserReviewsPaginatedByUserId(userId, page, pageSize, sortBy, ascOrDesc);
-        log.info("[GET] - Get reviews for user with id {}", userId);
+        log.info("[GET] - Get reviews for user with id {} by user: {}", userId, id);
         return new ResponseEntity<Object>(userReviews, HttpStatus.OK);
     }
 }

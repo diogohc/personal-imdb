@@ -34,11 +34,6 @@ import java.util.*;
 @Slf4j
 @RequiredArgsConstructor
 public class MovieService {
-    public static final int STATUS_MOVIE_ALREADY_EXISTS_IN_DB = 1;
-    public static final int STATUS_MOVIE_NOT_SAVED = 2;
-    public static final int STATUS_MOVIE_SAVED_SUCCESSFULLY = 3;
-    public static final int STATUS_INCORRECT_IMDB_ID = 4;
-    public static final int STATUS_ONLY_ACCEPT_MOVIES = 5;
 
     private final MovieRepository movieRepository;
 

@@ -61,11 +61,12 @@ public class ReviewService {
         return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
     }
 
-    public ResponseEntity<?> deleteReview(int movieId, int userId) {
-        //todo editar query. TESTAR ANTES
-        Optional<Review> rev = reviewRepository.findReviewByMovieIdAndUserId(movieId, userId);
-        if(rev.isPresent()){
-            reviewRepository.deleteById(rev.get().getId());
+    public ResponseEntity<?> deleteReview(Long id) {
+
+        //Optional<Review> rev = reviewRepository.findReviewByMovieIdAndUserId(movieId, userId);
+        Optional<Review> review = reviewRepository.findById(id);
+        if(review.isPresent()){
+            reviewRepository.deleteById(id);
             return ResponseEntity.status(HttpStatus.OK).build();
 
         }
