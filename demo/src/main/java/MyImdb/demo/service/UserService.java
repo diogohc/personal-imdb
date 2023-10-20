@@ -1,11 +1,13 @@
 package MyImdb.demo.service;
 
+
 import MyImdb.demo.dto.UserDetail;
 import MyImdb.demo.enums.AddExternalMovieStatus;
 import MyImdb.demo.exception.ResourceNotFoundException;
 import MyImdb.demo.model.Movie;
 import MyImdb.demo.model.Review;
 import MyImdb.demo.model.User;
+
 import MyImdb.demo.repository.ReviewRepository;
 import MyImdb.demo.repository.UserRepository;
 import MyImdb.demo.utils.DataBaseTasks;
@@ -78,8 +80,10 @@ public class UserService {
 
             //set the yearly stats to the main json
             json.set("nrMoviesPerYear", nrMoviesPerYearJson);
+
         }
         return json;
+
     }
 
     public void exportExcel(HttpServletResponse response) throws IOException {
@@ -88,9 +92,14 @@ public class UserService {
         excelExporter.export(response);
     }
 
-    public int getUserIdWithUsername(String username){
+    public Long getUserIdWithUsername(String username){
         Optional<User> user =  userRepository.findByUsername(username);
-        return user.map(value -> value.getId().intValue()).orElse(-1);
+
+        if(user.isPresent()){
+            return user.get().getId();
+        }else {
+            return (long) -1;
+        }
     }
 
 

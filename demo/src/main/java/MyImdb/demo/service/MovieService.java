@@ -1,5 +1,6 @@
 package MyImdb.demo.service;
 
+
 import MyImdb.demo.dto.MovieDetailDto;
 import MyImdb.demo.dto.MovieDto;
 import MyImdb.demo.enums.AddExternalMovieStatus;
@@ -11,6 +12,7 @@ import MyImdb.demo.repository.MovieRepository;
 import MyImdb.demo.repository.ReviewRepository;
 import MyImdb.demo.utils.GetMovieData;
 import MyImdb.demo.utils.UserSessionData;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -20,14 +22,15 @@ import lombok.extern.slf4j.Slf4j;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-
 import java.sql.Timestamp;
 import java.util.*;
 
@@ -37,6 +40,7 @@ import java.util.*;
 public class MovieService {
 
     private final MovieRepository movieRepository;
+
 
     private final ReviewRepository reviewRepository;
 
@@ -48,6 +52,7 @@ public class MovieService {
     public AddExternalMovieStatus addMovie(String imdbId) throws JSONException, JsonProcessingException {
         StringBuilder requestUrl = new StringBuilder();
         String url = "https://www.omdbapi.com/?i=";
+
         ObjectMapper objectMapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         String stringResponse="";
         GetMovieData getMovieData = new GetMovieData();
@@ -88,6 +93,8 @@ public class MovieService {
         return AddExternalMovieStatus.MOVIE_NOT_SAVED;
     }
 
+    /*
+    NAO APAGAR. TEM EXEMPLO DO MAPMOVIEIDRATING QUE E POPULADO QUANDO O USER AUTENTICA
     public ResponseEntity<?> getAllMovies(String username) {
 
         List<Movie> moviesList = movieRepository.findAll();
@@ -105,6 +112,7 @@ public class MovieService {
         return new ResponseEntity<Object>(movies, HttpStatus.OK);
     }
 
+
     //TODO usar a query para ir buscar o filme + review (inner join) como esta na listagem em vez de fazer 2 gets
     public ResponseEntity<?> getMovieById(int id, int userId) throws JsonProcessingException {
         int userRating = -1;
@@ -112,15 +120,24 @@ public class MovieService {
         Optional<Review> review = reviewRepository.findReviewByMovieIdAndUserId(id, userId);
         if(review.isPresent()){
             userRating = review.get().getRating();
+
         }
-        if(m.isPresent()){
-            Movie movie = m.get();
-            MovieDetailDto movieDetailDto = new MovieDetailDto(movie.getId().intValue(), movie.getTitle(), movie.getYear(), movie.getPlot(), movie.getDirector(), movie.getWriter(),
-                    movie.getCountry(), movie.getPoster(), movie.getRuntime(), movie.getImdbRating(), userRating);
-            return new ResponseEntity<Object>(movieDetailDto, HttpStatus.OK);
-        }
-        return new ResponseEntity<Object>(null, HttpStatus.NOT_FOUND);
+        return null;
     }
+
+
+    public List<MovieWithRating> getAllMovies(Long userId){
+        List<Object[]> moviesWithRatings = movieRepository.findMoviesWithRatingByUserId(userId);
+        List<MovieWithRating> lstMovies =  new ArrayList<>();
+
+        for (Object[] movieRating : moviesWithRatings) {
+            Movie movie = (Movie) movieRating[0];
+            Integer rating = (Integer) movieRating[1];
+            lstMovies.add(new MovieWithRating(movie, rating));
+        }
+        return lstMovies;
+    }
+
 
 
     public Movie getMovieByImdbID(String imdbID){
@@ -147,4 +164,5 @@ public class MovieService {
 
         return lstMovies;
     }
+
 }

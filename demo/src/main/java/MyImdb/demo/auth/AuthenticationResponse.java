@@ -1,6 +1,6 @@
 package MyImdb.demo.auth;
 
-import MyImdb.demo.model.Role;
+import MyImdb.demo.entity.Role;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

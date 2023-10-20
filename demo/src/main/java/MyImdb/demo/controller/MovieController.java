@@ -1,5 +1,6 @@
 package MyImdb.demo.controller;
 
+
 import MyImdb.demo.config.JwtService;
 import MyImdb.demo.dto.MovieDto;
 import MyImdb.demo.enums.AddExternalMovieStatus;
@@ -7,6 +8,7 @@ import MyImdb.demo.service.MovieService;
 import MyImdb.demo.service.UserService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.swagger.v3.oas.annotations.Operation;
+
 import jakarta.annotation.security.PermitAll;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,6 +32,7 @@ public class MovieController {
     private final MovieService movieService;
 
     private final UserService userService;
+
 
     private final JwtService jwtService;
     
@@ -77,16 +80,35 @@ public class MovieController {
         return movieService.getAllMovies(username);
     }
 
+
+
     @Operation(summary = "Get a movie by ID")
     @GetMapping("/{id}")
-    public ResponseEntity<?> getMovieById(@PathVariable(name="id") int id) throws JsonProcessingException {
+    public ResponseEntity<?> getMovieById(@PathVariable(name="id") Long id) {
         log.info("[GET] - Get movie with the id: " + id);
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        int userId = userService.getUserIdWithUsername(username);
+        Long userId = userService.getUserIdWithUsername(username);
         if(userId == -1){
-            return new ResponseEntity<Object>(null, HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(new DefaultResponse<>("User doesn't exist with username " + username, "NOT_FOUND"), HttpStatus.NOT_FOUND);
         }
-        return movieService.getMovieById(id, userId);
+
+        MovieWithRating m = movieService.getMovieById(id, userId);
+
+        if(m != null){
+            return new ResponseEntity<>(m, HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(new DefaultResponse<>("Movie doesn't exist with id: " + id, "NOT_FOUND"), HttpStatus.NOT_FOUND);
+        }
+    }
+
+
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<?> getMoviesIncludingRating(@PathVariable("userId") Long userId) {
+        //String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        log.info("[GET] - Get all movies ");
+        List<MovieWithRating> lstMovies = movieService.getAllMovies(userId);
+
+        return new ResponseEntity<>(lstMovies, HttpStatus.OK);
     }
 
     @Operation(summary = "Get list of all movies with pagination and sorting (asc/desc)")

@@ -1,5 +1,6 @@
 package MyImdb.demo.config;
 
+
 import MyImdb.demo.model.Role;
 import MyImdb.demo.repository.UserRepository;
 import io.jsonwebtoken.*;
@@ -10,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.User;
+
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
@@ -67,6 +69,7 @@ public class JwtService {
         List<String> currentUserRoles =
                 userDetails.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList();
         System.out.println("USER ROLES: "+ currentUserRoles);
+
         Map<String, Object> claims = new HashMap<>();
         claims.put("userId", userId);
         claims.put("role", role);
@@ -100,7 +103,9 @@ public class JwtService {
     public Long extractUserId(String token) {
         Claims claims = Jwts.parser()
                 .setSigningKey(SECRET_KEY)
+
                 .parseClaimsJws(token.substring(7))
+
                 .getBody();
 
         return claims.get("userId", Long.class);

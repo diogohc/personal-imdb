@@ -2,11 +2,16 @@ package MyImdb.demo.controller;
 
 
 import MyImdb.demo.config.JwtService;
+
 import MyImdb.demo.dto.MovieDto;
+
 import MyImdb.demo.dto.ReviewDto;
+import MyImdb.demo.entity.Review;
 import MyImdb.demo.service.ReviewService;
 
+
 import io.swagger.v3.oas.annotations.Operation;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONException;
@@ -35,8 +40,10 @@ public class ReviewController {
     @PostMapping("/addReview")
     public ResponseEntity<?> addReview(@RequestBody ReviewDto reviewdto){
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        log.info("[POST] - Add review. Review Dto: " + reviewdto);
         return reviewService.insertReview(username, reviewdto);
     }
+
 
     @Operation(summary = "Delete a review")
     @DeleteMapping("/deleteReview/{reviewId}")
@@ -50,10 +57,12 @@ public class ReviewController {
 
         log.info("[DELETE] - Delete review with id= {} by user {}",reviewId, userId);
         return reviewService.deleteReview(reviewId);
+
     }
 
 /*    @Operation(summary = "List user's reviews")
     @GetMapping("")
+
     public ResponseEntity<?> listUserReviews() throws JSONException {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         Vector<ReviewDto> reviews = reviewService.listUserReviews(username);
@@ -64,6 +73,7 @@ public class ReviewController {
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }*/
 
+
     @Operation(summary = "Edit a review")
     @PutMapping("/editReview")
     public ResponseEntity<?> updateReview(@RequestBody ReviewDto reviewDto){
@@ -71,6 +81,7 @@ public class ReviewController {
 
         return reviewService.editReview(reviewDto);
     }
+
 
     @Operation(summary = "List user's reviews")
     @GetMapping("/user/{userId}")
@@ -87,5 +98,6 @@ public class ReviewController {
         List<MovieDto> userReviews = reviewService.listUserReviewsPaginatedByUserId(userId, page, pageSize, sortBy, ascOrDesc);
         log.info("[GET] - Get reviews for user with id {} by user: {}", userId, id);
         return new ResponseEntity<Object>(userReviews, HttpStatus.OK);
+
     }
 }

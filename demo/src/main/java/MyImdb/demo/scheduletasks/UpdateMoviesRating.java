@@ -17,6 +17,7 @@ public class UpdateMoviesRating {
     private final Environment environment;
 
 
+
     //update movie rating with the ratigns added in the last 24hours
     @Scheduled(cron = "0 0 20 ? * *")
     public void updateMoviesRating(){
@@ -24,7 +25,7 @@ public class UpdateMoviesRating {
         Connection conn = null;
         PreparedStatement pstmt = null;
         int result = -1;
-        StringBuilder SQL = new StringBuilder("");
+
         String dbUrl = environment.getProperty("spring.datasource.url");
         String dbUsername = environment.getProperty("spring.datasource.username");
         String dbPassword = environment.getProperty("spring.datasource.password");
