@@ -41,3 +41,6 @@ demo/logs/log.log
 
 ### Secrets ###
 demo/src/main/resources/secrets.properties
+
+### Notes ###
+notas.txt
