@@ -1,23 +1,34 @@
 package MyImdb.demo.service;
 
-import MyImdb.demo.entity.User;
+
+import MyImdb.demo.dto.UserDetail;
+import MyImdb.demo.enums.AddExternalMovieStatus;
+import MyImdb.demo.exception.ResourceNotFoundException;
+import MyImdb.demo.model.Movie;
+import MyImdb.demo.model.Review;
+import MyImdb.demo.model.User;
+
 import MyImdb.demo.repository.ReviewRepository;
 import MyImdb.demo.repository.UserRepository;
 import MyImdb.demo.utils.DataBaseTasks;
 import MyImdb.demo.utils.ExcelUser;
+import MyImdb.demo.utils.MovieUtils;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.json.JSONException;
 import org.springframework.core.env.Environment;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.io.File;
 import java.io.IOException;
 import java.sql.*;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,27 +46,18 @@ public class UserService {
 
     private final Environment environment;
 
-    //private static final Logger logger = LoggerFactory.getLogger(UserService.class.getName());
+    private final MovieService movieService;
 
-    public Optional<User> findUserById(long id){
-        return this.userRepository.findById(id);
-    }
-
-    public Optional<User> findByUsername(String username){
-        return this.userRepository.findByUsername(username);
-    }
-
-    public List<User> findAll(){
-        return this.userRepository.findAll();
-    }
 
     public ObjectNode getUserStats(int userId){
         int totalNrMoviesWatched;
         int totalMinutesMoviesWatched;
         ObjectNode json = null;
-        log.info("Getting user stats for user: " + userId);
+
         Optional<User> user = userRepository.findById((long) userId);
         if(user.isPresent()){
+            log.info("Getting user stats for user: " + userId);
+
             totalNrMoviesWatched = reviewRepository.nrMoviesWatched(user.get().getId());
             totalMinutesMoviesWatched = reviewRepository.minutesMoviesWatched(user.get().getId());
 
@@ -79,9 +81,9 @@ public class UserService {
             //set the yearly stats to the main json
             json.set("nrMoviesPerYear", nrMoviesPerYearJson);
 
-            return json;
         }
-        return null;
+        return json;
+
     }
 
     public void exportExcel(HttpServletResponse response) throws IOException {
@@ -107,11 +109,12 @@ public class UserService {
         Connection conn = null;
         PreparedStatement pstmt = null;
         ResultSet rs = null;
-        StringBuffer SQL = new StringBuffer("");
+        StringBuilder SQL = new StringBuilder("");
         String dbUrl = environment.getProperty("spring.datasource.url");
         String dbUsername = environment.getProperty("spring.datasource.username");
         String dbPassword = environment.getProperty("spring.datasource.password");
         try{
+            assert dbUrl != null;
             conn = DriverManager.getConnection(dbUrl, dbUsername, dbPassword);
             SQL.append("SELECT YEAR(date_added) as YEAR, count(*) as NRFILMS FROM reviews ");
             SQL.append(" WHERE user_id = ? group by YEAR(date_added);");
@@ -131,6 +134,49 @@ public class UserService {
             DataBaseTasks.close(rs, pstmt, conn);
         }
         return mapYearNrMovies;
+    }
+
+
+    public UserDetail getUserById(long userId){
+        User user = userRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("User doesn't exist with given id: " + userId));
+
+        return new UserDetail(Math.toIntExact(user.getId()), user.getUsername(), user.getRole());
+    }
+
+    public void importUserRatingsInfo(File f, Long userId){
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        Date date;
+        List<String[]> lstMovieRatingInfo = MovieUtils.readImdbRatingsCsvFile(f);
+        AddExternalMovieStatus insertMovieStatus;
+        int nrMoviesAdded = 0;
+        int nrReviewsAdded = 0;
+        Optional<User> user = userRepository.findById(userId);
+
+        if(user.isPresent()){
+            for(String[] movieRatingInfo: lstMovieRatingInfo){
+                try {
+                    //get movie info and insert in the db if it doesn't exist
+                    insertMovieStatus = movieService.addMovie(movieRatingInfo[0]);
+                    date = (Date) dateFormat.parse(movieRatingInfo[2]);
+
+                    if(insertMovieStatus == AddExternalMovieStatus.MOVIE_SAVED_SUCCESSFULLY){
+                        nrMoviesAdded++;
+                    }
+
+                    if(insertMovieStatus == AddExternalMovieStatus.MOVIE_ALREADY_EXISTS_IN_DB || insertMovieStatus == AddExternalMovieStatus.MOVIE_SAVED_SUCCESSFULLY){
+                        Movie movie = movieService.getMovieByImdbID(movieRatingInfo[0]);
+                        Review rev = new Review(user.get(), movie, Integer.parseInt(movieRatingInfo[1]), new Timestamp(date.getTime()));
+                        reviewRepository.save(rev);
+                        nrReviewsAdded++;
+                    }
+                } catch (JSONException | JsonProcessingException | ParseException e) {
+                    log.error("Error importing user ratings info");
+                    throw new RuntimeException(e);
+                }
+            }
+            log.info("User {} added {} movies", userId, nrMoviesAdded);
+            log.info("User {} added {} reviews", userId, nrReviewsAdded);
+        }
     }
 
 }

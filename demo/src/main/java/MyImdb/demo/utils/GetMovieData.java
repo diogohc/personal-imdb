@@ -8,10 +8,10 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-public class GetData {
+public class GetMovieData {
 
 
-    public GetData() {
+    public GetMovieData() {
     }
 
     public String getMovies(String requestUrl) {

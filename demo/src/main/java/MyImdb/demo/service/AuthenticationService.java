@@ -57,14 +57,10 @@ public class AuthenticationService {
         Optional<User> user = userRepository.findByUsername(request.getUsername());
 
         //if user doesnt' exit
-        if(user.isEmpty()){
-            return AuthenticationResponse.builder().response("User doesn't exist").build();
+        if(user.isEmpty() || !passwordEncoder.matches(request.getPassword(), user.get().getPassword())){
+            return AuthenticationResponse.builder().response("Wrong credentials").build();
         }
 
-        //if password is wrong
-        if(!passwordEncoder.matches(request.getPassword(), user.get().getPassword())){
-            return AuthenticationResponse.builder().response("Wrong password").build();
-        }
 
         //Populate User Data
         UserData userData = new UserData();
@@ -73,7 +69,7 @@ public class AuthenticationService {
         UserSessionData userSessionData = new UserSessionData();
         userSessionData.setUserData(userData);
 
-        logger.info("User "+user.get().getUsername()+" logged in");
+        logger.info("User \""+user.get().getUsername()+"\" logged in");
         //generate token and return it
         String token = jwtService.generateToken(user.get(), user.get().getId(), user.get().getRole());
         logger.info("Authentication generated JWT: "+token);
