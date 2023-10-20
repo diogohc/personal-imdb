@@ -19,6 +19,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -39,14 +40,20 @@ public class MovieService {
 
     private final ReviewRepository reviewRepository;
 
+    @Value("${API_KEY}")
+    String apiKey;
+
 
 
     public AddExternalMovieStatus addMovie(String imdbId) throws JSONException, JsonProcessingException {
-        String[] url = {"https://www.omdbapi.com/?i=", "&apikey=a9c633d3"};
+        StringBuilder requestUrl = new StringBuilder();
+        String url = "https://www.omdbapi.com/?i=";
         ObjectMapper objectMapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         String stringResponse="";
         GetMovieData getMovieData = new GetMovieData();
-        stringResponse = getMovieData.getMovies(url[0] + imdbId + url[1]);
+
+        requestUrl.append(url).append(imdbId).append("&apikey=").append(apiKey);
+        stringResponse = getMovieData.getMovies(requestUrl.toString());
 
         JSONObject jsonResponse = new JSONObject(stringResponse);
         if(jsonResponse.getString("Response").equals("False")){

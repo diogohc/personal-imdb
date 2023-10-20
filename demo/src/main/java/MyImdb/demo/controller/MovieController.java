@@ -34,9 +34,12 @@ public class MovieController {
     private final JwtService jwtService;
     
     @Operation(summary = "Add a new movie")
-    @PostMapping("/addMovie")
-    public ResponseEntity<?> addMovie(@RequestParam(name="imdb_id") String imdb_id) throws JsonProcessingException, JSONException {
-        log.info("[POST] - Add movie");
+    @PostMapping("/addMovie/{imdb_id}")
+    public ResponseEntity<?> addMovie(@RequestHeader("Authorization") String authorizationHeader,
+                                      @PathVariable(name="imdb_id") String imdb_id) throws JsonProcessingException, JSONException {
+        Long userId = jwtService.extractUserId(authorizationHeader);
+
+        log.info("[POST] - Add a new movie by user {}", userId);
         AddExternalMovieStatus status = movieService.addMovie(imdb_id);
         String responseMessage = "";
         HttpStatus responseStatus = null;

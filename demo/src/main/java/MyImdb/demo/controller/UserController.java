@@ -2,10 +2,7 @@ package MyImdb.demo.controller;
 
 
 import MyImdb.demo.config.JwtService;
-import MyImdb.demo.dto.MovieDto;
-import MyImdb.demo.dto.ReviewDto;
 import MyImdb.demo.dto.UserDetail;
-import MyImdb.demo.service.ReviewService;
 import MyImdb.demo.service.UserService;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.swagger.v3.oas.annotations.Operation;
@@ -14,7 +11,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -25,7 +21,6 @@ import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.List;
 
 @Controller
 @RequestMapping("/api/v1/users")
@@ -35,6 +30,7 @@ public class UserController {
     private final UserService userService;
 
     private final JwtService jwtService;
+
 
 
     @Operation(summary = "Get user stats")
