@@ -2,16 +2,12 @@ package MyImdb.demo.controller;
 
 
 import MyImdb.demo.config.JwtService;
-
-import MyImdb.demo.dto.MovieDto;
-
 import MyImdb.demo.dto.ReviewDto;
 import MyImdb.demo.entity.Review;
 import MyImdb.demo.service.ReviewService;
 
-
-import io.swagger.v3.oas.annotations.Operation;
-
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONException;
@@ -35,8 +31,6 @@ public class ReviewController {
 
     private final JwtService jwtService;
 
-
-    @Operation(summary = "Add new review")
     @PostMapping("/addReview")
     public ResponseEntity<?> addReview(@RequestBody ReviewDto reviewdto){
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -44,37 +38,34 @@ public class ReviewController {
         return reviewService.insertReview(username, reviewdto);
     }
 
+    @DeleteMapping("/deleteReview")
+    public ResponseEntity<?> deleteReview(@RequestParam(name="movieId") Long movieId, @RequestParam(name="userId") Long userId){
+        log.info("[DELETE] - Delete review with movieId= "+movieId+" and userId= " +userId);
+        return reviewService.deleteReview(movieId, userId);
+    }
 
-    @Operation(summary = "Delete a review")
-    @DeleteMapping("/deleteReview/{reviewId}")
-    public ResponseEntity<?> deleteReview(@RequestHeader("Authorization") String authorizationHeader,
-                                          @PathVariable(name="reviewId") Long reviewId){
+    @GetMapping("")
+    public ResponseEntity<?> listUserReviews(@RequestHeader("Authorization") String authorizationHeader) throws JSONException {
+        //String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        Long userId = jwtService.extractUserId(authorizationHeader.substring("Bearer ".length()));
 
-        Long userId = jwtService.extractUserId(authorizationHeader);
-        if(userId == -1){
-            return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
-        }
+        Vector<ReviewDto> reviews = reviewService.listUserReviews(userId);
+        log.info("[GET] - Get all user reviews for user " + userId);
 
-        log.info("[DELETE] - Delete review with id= {} by user {}",reviewId, userId);
-        return reviewService.deleteReview(reviewId);
+        return new ResponseEntity<Object>(reviews, HttpStatus.OK);
 
     }
 
-/*    @Operation(summary = "List user's reviews")
-    @GetMapping("")
+    @GetMapping("/user-reviews/{userId}")
+    public ResponseEntity<?> listUserReviews(@PathVariable("userId") Long userId) throws JSONException {
+        Vector<ReviewDto> reviews = reviewService.listUserReviews(userId);
+        log.info("[GET] - Get all user reviews for user " + userId);
 
-    public ResponseEntity<?> listUserReviews() throws JSONException {
-        String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        Vector<ReviewDto> reviews = reviewService.listUserReviews(username);
-        log.info("[GET] - Get all user reviews");
-        if(reviews!= null && reviews.size() > 0){
-            return new ResponseEntity<Object>(reviews, HttpStatus.OK);
-        }
-        return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-    }*/
+        return new ResponseEntity<Object>(reviews, HttpStatus.OK);
 
 
-    @Operation(summary = "Edit a review")
+    }
+
     @PutMapping("/editReview")
     public ResponseEntity<?> updateReview(@RequestBody ReviewDto reviewDto){
         log.info("[PUT] - Edit review. Review Dto: " +reviewDto);
@@ -83,21 +74,12 @@ public class ReviewController {
     }
 
 
-    @Operation(summary = "List user's reviews")
-    @GetMapping("/user/{userId}")
-    public ResponseEntity<?> listUserReviews(@RequestHeader("Authorization") String authorizationHeader,
-                                             @PathVariable(name = "userId") Long userId,
-                                             @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int pageSize,
-                                             @RequestParam(defaultValue = "date_added") String sortBy, @RequestParam(defaultValue = "desc") String ascOrDesc){
-        Long id = jwtService.extractUserId(authorizationHeader);
+    //GET USER REVIEWS UPDATED ENDPOINT
+    //RETURNS THE REVIEW OBJECT AND INSIDE HAS THE MOVIE OBJECT COMPLETED
+    @GetMapping("/movies-with-reviews/{userId}")
+    public ResponseEntity<?> getMoviesReviewedByUser(@PathVariable("userId") Long userId) {
+        List<Review> lstMovies = reviewService.getAllMoviesReviewedByUser(userId);
 
-        if(id == -1){
-            return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
-        }
-
-        List<MovieDto> userReviews = reviewService.listUserReviewsPaginatedByUserId(userId, page, pageSize, sortBy, ascOrDesc);
-        log.info("[GET] - Get reviews for user with id {} by user: {}", userId, id);
-        return new ResponseEntity<Object>(userReviews, HttpStatus.OK);
-
+        return new ResponseEntity<>(lstMovies, HttpStatus.OK);
     }
 }
