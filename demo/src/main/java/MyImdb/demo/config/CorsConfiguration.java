@@ -4,7 +4,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-@Configuration
+/*@Configuration
 public class CorsConfiguration implements WebMvcConfigurer {
 
     @Override
@@ -17,3 +17,4 @@ public class CorsConfiguration implements WebMvcConfigurer {
                 .maxAge(3600);
     }
 }
+*/

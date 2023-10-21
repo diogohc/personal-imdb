@@ -1,7 +1,6 @@
 package MyImdb.demo.dto;
 
-import MyImdb.demo.entity.Movie;
-import MyImdb.demo.entity.Review;
+import MyImdb.demo.model.Movie;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

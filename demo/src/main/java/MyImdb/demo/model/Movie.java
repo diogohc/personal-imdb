@@ -1,4 +1,4 @@
-package MyImdb.demo.entity;
+package MyImdb.demo.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
