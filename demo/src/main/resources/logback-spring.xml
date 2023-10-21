@@ -23,8 +23,10 @@
         </rollingPolicy>
     </appender>
 
+    <!-- Application log level -->
     <logger name="MyImdb.demo" level="debug" />
 
+    <!-- Spring log level -->
     <root level="info">
         <appender-ref ref="Console" />
         <appender-ref ref="RollingFile" />

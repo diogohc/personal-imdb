@@ -6,7 +6,6 @@ import MyImdb.demo.dto.UserDetail;
 import MyImdb.demo.service.UserService;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -15,7 +14,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
-
 import java.io.File;
 import java.io.IOException;
 import java.text.DateFormat;
@@ -35,11 +33,17 @@ public class UserController {
 
     @Operation(summary = "Get user stats")
     @GetMapping("/stats/{userId}")
-    public ResponseEntity<?> getUserStats(
-            @Parameter(description = "JWT Token", required = true, example = "Bearer <token>")String authorizationHeader,
+    public ResponseEntity<?> getUserStats(@RequestHeader("Authorization") String authorizationHeader,
             @PathVariable("userId") int userId){
-        //userService.getMapYearNrMovies(id);
+
+        Long id = jwtService.extractUserId(authorizationHeader);
+
+        if(id == -1){
+            return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
+        }
+        log.info("[GET] - Get stats for user with id {} by user with id {}", userId, id);
         ObjectNode json = userService.getUserStats(userId);
+
         return new ResponseEntity<>(json, HttpStatus.OK);
     }
 
@@ -47,7 +51,7 @@ public class UserController {
     @Operation(summary = "Get user details using JWT")
     public ResponseEntity<UserDetail> getUserDetails(@RequestHeader("Authorization") String authorizationHeader){
         Long userId = jwtService.extractUserId(authorizationHeader);
-
+        log.info("[GET] - Get user details for user with id {}", userId);
         UserDetail userDetail = userService.getUserById(userId);
         return new ResponseEntity<>(userDetail, HttpStatus.OK);
     }
