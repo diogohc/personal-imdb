@@ -1,30 +1,24 @@
 package MyImdb.demo.config;
 
-
-import MyImdb.demo.model.Role;
+import MyImdb.demo.entity.Role;
 import MyImdb.demo.repository.UserRepository;
-import io.jsonwebtoken.*;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.userdetails.User;
-
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
-import java.nio.file.attribute.UserPrincipal;
 import java.security.Key;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
 @Service
-@Slf4j
 public class JwtService {
     @Value("${SECRET_KEY}")
     private String SECRET_KEY;
@@ -37,26 +31,12 @@ public class JwtService {
     }
 
     public <T> T extractClaim(String token, Function<Claims, T> claimsResolver){
-        Claims claims = null;
-        try{
-            claims = extractAllClaims(token);
-        } catch(NullPointerException e){
-            log.error("No JWT found");
-        }
-        return claimsResolver.apply(claims);
+         final Claims claims = extractAllClaims(token);
+         return claimsResolver.apply(claims);
     }
 
     private Claims extractAllClaims(String token){
-        Claims claims = null;
-        try{
-            claims = Jwts.parserBuilder().setSigningKey(getSignInKey()).build().parseClaimsJws(token).getBody();
-        } catch (MalformedJwtException e){
-            log.error("Malformed JWT");
-        } catch (ExpiredJwtException e1){
-            log.error("Expired JWT");
-        }
-
-        return claims;
+        return Jwts.parserBuilder().setSigningKey(getSignInKey()).build().parseClaimsJws(token).getBody();
     }
 
     private Key getSignInKey() {
@@ -65,11 +45,6 @@ public class JwtService {
     }
 
     public String generateToken(UserDetails userDetails, Long userId, Role role){
-
-        List<String> currentUserRoles =
-                userDetails.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList();
-        System.out.println("USER ROLES: "+ currentUserRoles);
-
         Map<String, Object> claims = new HashMap<>();
         claims.put("userId", userId);
         claims.put("role", role);
@@ -103,9 +78,7 @@ public class JwtService {
     public Long extractUserId(String token) {
         Claims claims = Jwts.parser()
                 .setSigningKey(SECRET_KEY)
-
-                .parseClaimsJws(token.substring(7))
-
+                .parseClaimsJws(token)
                 .getBody();
 
         return claims.get("userId", Long.class);

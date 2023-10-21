@@ -27,14 +27,13 @@ public class SecurityConfiguration {
 
     private final AuthenticationProvider authenticationProvider;
 
-    //testar tirar o .cors() e ver se da para enviar o req do frontend na mesma
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
-        httpSecurity.cors().and()
+        httpSecurity
                 .csrf()
                 .disable()
                 .authorizeHttpRequests()
-                .requestMatchers("/api/v1/auth/**", "/swagger-ui/**", "/v3/api-docs/**")
+                .requestMatchers("/api/v1/auth/**", "/api/v1/movies/**")
                 .permitAll()
                 .anyRequest()
                 .authenticated()
@@ -51,7 +50,7 @@ public class SecurityConfiguration {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Collections.singletonList("http://localhost:3000"));
+        configuration.setAllowedOrigins(Collections.singletonList("http://localhost:4200"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Collections.singletonList("*"));
         configuration.setAllowCredentials(true);

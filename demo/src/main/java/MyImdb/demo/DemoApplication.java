@@ -19,6 +19,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import java.util.Arrays;
 
 @SpringBootApplication(exclude = {SecurityAutoConfiguration.class})
+//@OpenAPIDefinition(info = @Info(title = "MyIMDB API", version = "2.0", description = "Movies Information"))
 @EnableScheduling
 public class DemoApplication {
 

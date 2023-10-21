@@ -1,18 +1,10 @@
 package MyImdb.demo.service;
 
-
-import MyImdb.demo.dto.MovieDetailDto;
-import MyImdb.demo.dto.MovieDto;
-import MyImdb.demo.enums.AddExternalMovieStatus;
+import MyImdb.demo.dto.MovieWithRating;
 import MyImdb.demo.gson.MovieGson;
-import MyImdb.demo.mapper.MovieMapper;
-import MyImdb.demo.model.Movie;
-import MyImdb.demo.model.Review;
+import MyImdb.demo.entity.Movie;
 import MyImdb.demo.repository.MovieRepository;
-import MyImdb.demo.repository.ReviewRepository;
-import MyImdb.demo.utils.GetMovieData;
-import MyImdb.demo.utils.UserSessionData;
-
+import MyImdb.demo.utils.GetData;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -22,12 +14,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
-
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -41,31 +27,22 @@ public class MovieService {
 
     private final MovieRepository movieRepository;
 
+    @Value("${OMDB_API_KEY}")
+    private String apiKey;
 
-    private final ReviewRepository reviewRepository;
-
-    @Value("${API_KEY}")
-    String apiKey;
-
-
-
-    public AddExternalMovieStatus addMovie(String imdbId) throws JSONException, JsonProcessingException {
-        StringBuilder requestUrl = new StringBuilder();
-        String url = "https://www.omdbapi.com/?i=";
-
+    public ResponseEntity<?> addMovie(String imdbId) throws JSONException, JsonProcessingException {
+        String[] url = {"https://www.omdbapi.com/?i=", "&apikey=" +apiKey};
         ObjectMapper objectMapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         String stringResponse="";
-        GetMovieData getMovieData = new GetMovieData();
-
-        requestUrl.append(url).append(imdbId).append("&apikey=").append(apiKey);
-        stringResponse = getMovieData.getMovies(requestUrl.toString());
+        GetData getData = new GetData();
+        stringResponse = getData.getMovies(url[0] + imdbId + url[1]);
 
         JSONObject jsonResponse = new JSONObject(stringResponse);
         if(jsonResponse.getString("Response").equals("False")){
-            return AddExternalMovieStatus.INCORRECT_IMDB_ID;
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Incorrect IMDb ID.");
         }
         if(!jsonResponse.getString("Type").equalsIgnoreCase("movie")){
-            return AddExternalMovieStatus.ONLY_ACCEPT_MOVIES;
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Only accept movies (for now)");
         }
         log.info("Adding the movie with the imdb_id " + imdbId +" to the database");
         MovieGson movieGson = objectMapper.readValue(stringResponse, MovieGson.class);
@@ -73,7 +50,7 @@ public class MovieService {
     }
 
     @Transactional
-    public AddExternalMovieStatus insertMovie(MovieGson movieGson){
+    public ResponseEntity<?> insertMovie(MovieGson movieGson){
         Movie m = new Movie(movieGson.getTitle(), Integer.parseInt(movieGson.getYear()), movieGson.getPlot(),
                 movieGson.getDirector(), movieGson.getWriter(), movieGson.getCountry(), movieGson.getPoster(),
                 movieGson.getImdbID(), Integer.parseInt(movieGson.getRuntime().split(" ")[0]),
@@ -82,15 +59,15 @@ public class MovieService {
 
         //if movie already exists in the DB
         if(movieRepository.findByImdbId(m.getImdbId()).isPresent()){
-            return AddExternalMovieStatus.MOVIE_ALREADY_EXISTS_IN_DB;
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Movie Already Exists");
         }
 
         movieRepository.save(m);
 
         if(movieRepository.existsById(m.getId())){
-            return AddExternalMovieStatus.MOVIE_SAVED_SUCCESSFULLY;
+            return ResponseEntity.status(HttpStatus.CREATED).body(m);
         }
-        return AddExternalMovieStatus.MOVIE_NOT_SAVED;
+        return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
     }
 
     /*
@@ -112,15 +89,17 @@ public class MovieService {
         return new ResponseEntity<Object>(movies, HttpStatus.OK);
     }
 
+     */
 
-    //TODO usar a query para ir buscar o filme + review (inner join) como esta na listagem em vez de fazer 2 gets
-    public ResponseEntity<?> getMovieById(int id, int userId) throws JsonProcessingException {
-        int userRating = -1;
-        Optional<Movie> m = movieRepository.findById((long) id);
-        Optional<Review> review = reviewRepository.findReviewByMovieIdAndUserId(id, userId);
-        if(review.isPresent()){
-            userRating = review.get().getRating();
 
+
+    public MovieWithRating getMovieById(Long movieId, Long userId) {
+        List<Object[]> movieRating = movieRepository.findMovieWithRatingByMovieIdAndUserId(movieId, userId);
+
+        if (movieRating != null && movieRating.size() > 0) {
+            Movie movie = (Movie) movieRating.get(0)[0];
+            Integer rating = (Integer) movieRating.get(0)[1];
+            return new MovieWithRating(movie, rating);
         }
         return null;
     }
@@ -135,33 +114,6 @@ public class MovieService {
             Integer rating = (Integer) movieRating[1];
             lstMovies.add(new MovieWithRating(movie, rating));
         }
-        return lstMovies;
-    }
-
-
-
-    public Movie getMovieByImdbID(String imdbID){
-        Optional<Movie> movie = movieRepository.findByImdbId(imdbID);
-
-        return movie.orElse(null);
-    }
-
-    public List<MovieDto> getMoviesWithUserRatingsPaginated(Long userId, int page, int pageSize, String sortBy, String ascOrDesc) {
-
-        Sort.Direction direction = ascOrDesc.equals("asc") ? Sort.Direction.ASC : Sort.Direction.DESC;
-        Pageable pageable = PageRequest.of(page, pageSize, Sort.by(direction, sortBy));
-
-        Page<Object[]> pagesMoviesWithRatings = movieRepository.findMoviesWithUserRatings(userId, pageable);
-        List<Object[]> lstMoviesWithRatings = pagesMoviesWithRatings.getContent();
-
-        List<MovieDto> lstMovies =  new ArrayList<>();
-
-        for (Object[] movieRating : lstMoviesWithRatings) {
-            Movie movie = (Movie) movieRating[0];
-            Integer rating = (Integer) (movieRating[1] == null ? 0 : movieRating[1]);
-            lstMovies.add(MovieMapper.mapToMovieDto(movie, rating));
-        }
-
         return lstMovies;
     }
 
