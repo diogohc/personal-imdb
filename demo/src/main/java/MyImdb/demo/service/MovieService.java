@@ -27,7 +27,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-
 import java.sql.Timestamp;
 import java.util.*;
 
@@ -42,7 +41,6 @@ public class MovieService {
 
     @Value("${API_KEY}")
     String apiKey;
-
 
 
     public AddExternalMovieStatus addMovie(String imdbId) throws JSONException, JsonProcessingException {
@@ -62,7 +60,7 @@ public class MovieService {
         if(!jsonResponse.getString("Type").equalsIgnoreCase("movie")){
             return AddExternalMovieStatus.ONLY_ACCEPT_MOVIES;
         }
-        log.info("Adding the movie with the imdb_id " + imdbId +" to the database");
+        log.info("Adding the movie with the imdb_id {} to the database", imdbId);
         MovieGson movieGson = objectMapper.readValue(stringResponse, MovieGson.class);
         return insertMovie(movieGson);
     }
@@ -88,13 +86,13 @@ public class MovieService {
         return AddExternalMovieStatus.MOVIE_NOT_SAVED;
     }
 
+    //deprecated
     public ResponseEntity<?> getAllMovies(String username) {
 
         List<Movie> moviesList = movieRepository.findAll();
         List<MovieDto> movies = new ArrayList<MovieDto>();
 
         UserSessionData userSessionData = new UserSessionData();
-        System.out.println("INSIDE MOVIE SERVICE: "+ userSessionData.getUserData().mapMovieIdRating);
 
         moviesList.forEach(movie -> {
             Integer rating = userSessionData.getUserData().mapMovieIdRating.get(movie.getId().intValue());

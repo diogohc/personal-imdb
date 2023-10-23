@@ -40,11 +40,11 @@ public class ReviewService {
 
     private final UserService userService;
 
+    //todo delete the usersessiondata
     @Transactional
-    public ResponseEntity<?> insertReview(String username, ReviewDto reviewdto){
-        int userId = userService.getUserIdWithUsername(username);
+    public ResponseEntity<?> insertReview(long userId, ReviewDto reviewdto){
         Optional<Movie> movie = movieRepository.findById((long) reviewdto.getMovieId());
-        Optional<User> user = userRepository.findById((long) userId);
+        Optional<User> user = userRepository.findById( userId);
 
         if(user.isPresent() && movie.isPresent()){
             Review review = new Review(user.get(), movie.get(), reviewdto.getRating(), reviewdto.getDateAdded() == null ? new Timestamp(System.currentTimeMillis()) : reviewdto.getDateAdded());
@@ -61,12 +61,10 @@ public class ReviewService {
         return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
     }
 
-    public ResponseEntity<?> deleteReview(Long id) {
-
-        //Optional<Review> rev = reviewRepository.findReviewByMovieIdAndUserId(movieId, userId);
-        Optional<Review> review = reviewRepository.findById(id);
+    public ResponseEntity<?> deleteReview(Long reviewId) {
+        Optional<Review> review = reviewRepository.findById(reviewId);
         if(review.isPresent()){
-            reviewRepository.deleteById(id);
+            reviewRepository.deleteById(reviewId);
             return ResponseEntity.status(HttpStatus.OK).build();
 
         }
@@ -92,6 +90,7 @@ public class ReviewService {
         return null;
     }
 
+    //deprecated
     public List<MovieDto> listUserReviewsByUserId(int userId){
         User user = userRepository.findById((long) userId).orElseThrow(
                 () -> new ResourceNotFoundException("User doesn't exist with given id: " + userId)
@@ -122,6 +121,7 @@ public class ReviewService {
         return lstMovies;
     }
 
+    //todo delete the usersession
     @Transactional
     public ResponseEntity<?> editReview(ReviewDto reviewDto){
         int nrRecordsUpdated;

@@ -21,7 +21,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.json.JSONException;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
-
 import java.io.File;
 import java.io.IOException;
 import java.sql.*;
@@ -129,7 +128,8 @@ public class UserService {
 
 
     public UserDetail getUserById(long userId){
-        User user = userRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("User doesn't exist with given id: " + userId));
+        User user = userRepository.findById(userId).orElseThrow(
+                () -> new ResourceNotFoundException("User doesn't exist with given id: " + userId));
 
         return new UserDetail(Math.toIntExact(user.getId()), user.getUsername(), user.getRole());
     }
@@ -153,7 +153,7 @@ public class UserService {
                     if(insertMovieStatus == AddExternalMovieStatus.MOVIE_SAVED_SUCCESSFULLY){
                         nrMoviesAdded++;
                     }
-
+                    //create a review for the movie
                     if(insertMovieStatus == AddExternalMovieStatus.MOVIE_ALREADY_EXISTS_IN_DB || insertMovieStatus == AddExternalMovieStatus.MOVIE_SAVED_SUCCESSFULLY){
                         Movie movie = movieService.getMovieByImdbID(movieRatingInfo[0]);
                         Review rev = new Review(user.get(), movie, Integer.parseInt(movieRatingInfo[1]), new Timestamp(date.getTime()));
