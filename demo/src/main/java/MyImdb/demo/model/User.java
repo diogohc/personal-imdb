@@ -22,7 +22,7 @@ import java.util.List;
 //implement UserDetails to make it easier to work with spring security
 public class User implements UserDetails {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue
     @Column(name = "id", nullable = false)
     private Long id;
     @Column(unique=true)
