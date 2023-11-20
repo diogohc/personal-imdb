@@ -39,30 +39,14 @@ public class MovieService {
 
     private final ReviewRepository reviewRepository;
 
+    private final RabbitMQProducer rabbitMQProducer;
+
     @Value("${API_KEY}")
     String apiKey;
 
 
-    public AddExternalMovieStatus addMovie(String imdbId) throws JSONException, JsonProcessingException {
-        StringBuilder requestUrl = new StringBuilder();
-        String url = "https://www.omdbapi.com/?i=";
-        ObjectMapper objectMapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        String stringResponse="";
-        GetMovieData getMovieData = new GetMovieData();
-
-        requestUrl.append(url).append(imdbId).append("&apikey=").append(apiKey);
-        stringResponse = getMovieData.getMovies(requestUrl.toString());
-
-        JSONObject jsonResponse = new JSONObject(stringResponse);
-        if(jsonResponse.getString("Response").equals("False")){
-            return AddExternalMovieStatus.INCORRECT_IMDB_ID;
-        }
-        if(!jsonResponse.getString("Type").equalsIgnoreCase("movie")){
-            return AddExternalMovieStatus.ONLY_ACCEPT_MOVIES;
-        }
-        log.info("Adding the movie with the imdb_id {} to the database", imdbId);
-        MovieGson movieGson = objectMapper.readValue(stringResponse, MovieGson.class);
-        return insertMovie(movieGson);
+    public void addMovie(String imdbId) throws JSONException, JsonProcessingException {
+        rabbitMQProducer.sendMessage(imdbId);
     }
 
     @Transactional
