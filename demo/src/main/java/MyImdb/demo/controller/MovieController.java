@@ -38,32 +38,9 @@ public class MovieController {
         Long userId = jwtService.extractUserId(authorizationHeader);
 
         log.info("[POST] - Add a new movie to the database by user {}", userId);
-        AddExternalMovieStatus status = movieService.addMovie(imdb_id);
-        String responseMessage = "";
-        HttpStatus responseStatus = null;
+        movieService.addMovie(imdb_id);
 
-        switch(status) {
-            case MOVIE_ALREADY_EXISTS_IN_DB:
-                responseMessage ="Movie already exists in the database";
-                responseStatus = HttpStatus.BAD_REQUEST;
-                break;
-            case MOVIE_NOT_SAVED:
-                responseMessage ="Error Saving Movie";
-                responseStatus = HttpStatus.BAD_REQUEST;
-                break;
-            case INCORRECT_IMDB_ID:
-                responseMessage ="Incorrect IMDB ID";
-                responseStatus = HttpStatus.BAD_REQUEST;
-                break;
-            case ONLY_ACCEPT_MOVIES:
-                responseMessage ="The application only accepts movie IDS";
-                responseStatus = HttpStatus.BAD_REQUEST;
-                break;
-            default:
-                responseMessage ="Movie Created";
-                responseStatus = HttpStatus.OK;
-        }
-        return new ResponseEntity<>(responseMessage,responseStatus);
+        return new ResponseEntity<>("",HttpStatus.OK);
     }
 
     @Operation(summary = "Get a movie by ID")

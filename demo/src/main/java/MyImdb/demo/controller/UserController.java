@@ -72,7 +72,7 @@ public class UserController {
         File f = new File("");
         Long userId = jwtService.extractUserId(authorizationHeader);
 
-        userService.importUserRatingsInfo(f, userId);
+        //userService.importUserRatingsInfo(f, userId);
 
         return null;
     }
