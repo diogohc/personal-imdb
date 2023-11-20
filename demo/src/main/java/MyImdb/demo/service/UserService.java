@@ -134,6 +134,8 @@ public class UserService {
         return new UserDetail(Math.toIntExact(user.getId()), user.getUsername(), user.getRole());
     }
 
+    //bulk import through CSV file
+    //TODO: change logic. Send imdb IDs through rabbitmq instead of inserting here
     public void importUserRatingsInfo(File f, Long userId){
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
         Date date;
@@ -145,9 +147,10 @@ public class UserService {
 
         if(user.isPresent()){
             for(String[] movieRatingInfo: lstMovieRatingInfo){
+/*
                 try {
                     //get movie info and insert in the db if it doesn't exist
-                    insertMovieStatus = movieService.addMovie(movieRatingInfo[0]);
+                    //insertMovieStatus = movieService.addMovie(movieRatingInfo[0]);
                     date = (Date) dateFormat.parse(movieRatingInfo[2]);
 
                     if(insertMovieStatus == AddExternalMovieStatus.MOVIE_SAVED_SUCCESSFULLY){
@@ -164,6 +167,8 @@ public class UserService {
                     log.error("Error importing user ratings info");
                     throw new RuntimeException(e);
                 }
+
+ */
             }
             log.info("User {} added {} movies", userId, nrMoviesAdded);
             log.info("User {} added {} reviews", userId, nrReviewsAdded);

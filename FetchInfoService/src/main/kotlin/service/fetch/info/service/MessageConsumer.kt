@@ -1,48 +1,48 @@
 package service.fetch.info.service
 
-import com.fasterxml.jackson.databind.DeserializationFeature
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.google.gson.Gson
 import org.springframework.amqp.rabbit.annotation.RabbitListener
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import service.fetch.info.dto.MovieDTO
+import service.fetch.info.entity.Movie
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.net.HttpURLConnection
 import java.net.URL
+import java.sql.Timestamp
 
 
 @Service
 class MessageConsumer(private val movieService: MovieService) {
 
-    @Value("\${rabbitmq.queue.name}")
-    private lateinit var queueName: String
-
     @Value("\${API_KEY}")
     private lateinit var apiKey : String
 
-    @RabbitListener(queues = ["myQueue"])
+    @RabbitListener(queues = ["\${rabbitmq.queue.name}"])
     fun receiveMessage(message: String){
-        println("MESSAGE: $message")
+        //TODO change to log
+        println("Message received from the rabbitmq: $message")
         //get movie info
-        val response = makeApiRequest(message)
+        val movieDto = makeApiRequest(message)
 
         //save movie
-        println("RESPONSE: ${response.toString()}")
+        if (movieDto != null) {
+            val m = Movie(movieDto.Title, movieDto.Year.toInt(), movieDto.Plot, movieDto.Director, movieDto.Writer, movieDto.Country,
+            movieDto.Poster, movieDto.imdbID, movieDto.Runtime.split(" ")[0].toInt(), movieDto.imdbRating.toFloat(), movieDto.Genre,
+                Timestamp(System.currentTimeMillis())
+            )
 
-        if (response != null) {
-            println(response.Title)
+            //TODO change to log
+            println("Adding the movie with the imdb_id $message to the database");
+            movieService.saveMovie(m);
         }
     }
 
-
     fun makeApiRequest(imdbId: String): MovieDTO? {
-
-        var url : URL
-        var requestUrl = StringBuilder()
+        val url : URL
+        val requestUrl = StringBuilder()
         val baseUrl: String = "https://www.omdbapi.com/?i="
-        val objectMapper = ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
         var movieJson: MovieDTO? = null
         requestUrl.append(baseUrl).append(imdbId).append("&apikey=").append(apiKey)
 
@@ -63,7 +63,7 @@ class MessageConsumer(private val movieService: MovieService) {
                 println("Incorrect IMDB id")
                 return null
             }
-            if(movieJson.Type != "movie"){
+            if(movieJson.Type != "movie") {
                 println("Incorrect type. Must be movie")
                 return null
             }

@@ -31,9 +31,10 @@ fun makeApiRequest(apiKey: String, imdbId: String){
 
     println("End Test")
 }
-
+/*
 fun main(){
 
     makeApiRequest("a9c633d3", "tt1375666");
 }
 
+*/
