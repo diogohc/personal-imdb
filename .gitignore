@@ -45,3 +45,6 @@ FetchInfoService/src/main/resources/secrets.properties
 
 ### Notes ###
 notes.txt
+
+### Docs ###
+docs/
