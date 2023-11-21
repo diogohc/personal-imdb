@@ -12,7 +12,7 @@ This is a Spring Boot application to build an IMDb clone-like site. It's a perso
 
 ## Application Architecture
 <p align="center">
-    <img alt="architecture-diagram" width="500" src="docs/arch.png" />
+    <img alt="architecture-diagram" width="500" src="images/arch.png" />
 </p>
 
 ## Next major updates
