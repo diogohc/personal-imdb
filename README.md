@@ -1,8 +1,9 @@
 # personal-imdb
-This is a spring-boot application to build a IMDB clone like site. It's a personal project to improve my technical skills while working with something I like to do in my spare time, wathing movies.
+This is a Spring Boot application to build an IMDb clone-like site. It's a personal project to improve my technical skills while working on something I like to do in my spare time: watching movies.
 
 ## Tech Stack
  - Spring Boot
+ - JWT
  - Java
  - Kotlin
  - RabbitMQ
@@ -11,9 +12,7 @@ This is a spring-boot application to build a IMDB clone like site. It's a person
 
 ## Application Architecture
 <p align="center">
-  <a href="https://imdb-clone.the-coding-lab.com/" target="_blank">
     <img alt="architecture-diagram" width="500" src="docs/arch.png" />
-  </a>
 </p>
 
 ## Next major updates
