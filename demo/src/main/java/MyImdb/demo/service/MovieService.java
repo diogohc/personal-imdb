@@ -45,8 +45,14 @@ public class MovieService {
     String apiKey;
 
 
-    public void addMovie(String imdbId) throws JSONException, JsonProcessingException {
-        rabbitMQProducer.sendMessage(imdbId);
+    public String addMovie(String imdbId) throws JSONException, JsonProcessingException {
+
+        if(movieRepository.findByImdbId(imdbId).isEmpty()) {
+            rabbitMQProducer.sendMessage(imdbId);
+            return "Movie will be inserted shortly";
+        }
+
+        return "Movie already exists";
     }
 
     @Transactional
@@ -87,7 +93,7 @@ public class MovieService {
         return new ResponseEntity<Object>(movies, HttpStatus.OK);
     }
 
-    //TODO usar a query para ir buscar o filme + review (inner join) como esta na listagem em vez de fazer 2 gets
+    //TODO use a query to fetch movie + review (inner join) like it is on the list instead of doing 2 database selects
     public ResponseEntity<?> getMovieById(int id, int userId) throws JsonProcessingException {
         int userRating = -1;
         Optional<Movie> m = movieRepository.findById((long) id);

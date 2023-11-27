@@ -38,9 +38,9 @@ public class MovieController {
         Long userId = jwtService.extractUserId(authorizationHeader);
 
         log.info("[POST] - Add a new movie to the database by user {}", userId);
-        movieService.addMovie(imdb_id);
+        String resp = movieService.addMovie(imdb_id);
 
-        return new ResponseEntity<>("",HttpStatus.OK);
+        return new ResponseEntity<>(resp,HttpStatus.OK);
     }
 
     @Operation(summary = "Get a movie by ID")
