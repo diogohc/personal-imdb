@@ -41,6 +41,8 @@ public class JwtService {
         } catch(NullPointerException e){
             log.error("No JWT found");
         }
+        if(claims == null) return null;
+
         return claimsResolver.apply(claims);
     }
 

@@ -21,8 +21,7 @@ public class ApiDocumentationConfig {
                                 .name("example")
                                 .email("exaample@z.com")))
                 .externalDocs(new ExternalDocumentation()
-                        .description("Documentation")
-                        .url("https:/wiki...."));
+                        .description("Documentation"));
     }
 
 }
