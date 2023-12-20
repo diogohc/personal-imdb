@@ -24,6 +24,8 @@ import java.util.function.Function;
 @Service
 @Slf4j
 public class JwtService {
+    //2hrs
+    private long TOKEN_VALIDITY = 2 * 60 * 60 * 1000;
     @Value("${SECRET_KEY}")
     private String SECRET_KEY;
 
@@ -81,7 +83,7 @@ public class JwtService {
                 .setClaims(extractClaims)
                 .setSubject(userDetails.getUsername())
                 .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 24))
+                .setExpiration(new Date(System.currentTimeMillis() + TOKEN_VALIDITY))
                 .signWith(getSignInKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
