@@ -5,7 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public class DataBaseTasks {
+public class DataBaseUtils {
     public static void close(ResultSet rs, PreparedStatement pstmt, Connection conn){
         closeResultSet(rs);
         closePreparedStatement(pstmt);

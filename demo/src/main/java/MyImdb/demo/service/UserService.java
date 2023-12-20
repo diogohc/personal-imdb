@@ -8,7 +8,7 @@ import MyImdb.demo.model.Review;
 import MyImdb.demo.model.User;
 import MyImdb.demo.repository.ReviewRepository;
 import MyImdb.demo.repository.UserRepository;
-import MyImdb.demo.utils.DataBaseTasks;
+import MyImdb.demo.utils.DataBaseUtils;
 import MyImdb.demo.utils.ExcelUser;
 import MyImdb.demo.utils.MovieUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -121,7 +121,7 @@ public class UserService {
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }finally {
-            DataBaseTasks.close(rs, pstmt, conn);
+            DataBaseUtils.close(rs, pstmt, conn);
         }
         return mapYearNrMovies;
     }

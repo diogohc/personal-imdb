@@ -1,6 +1,6 @@
 package MyImdb.demo.scheduletasks;
 
-import MyImdb.demo.utils.DataBaseTasks;
+import MyImdb.demo.utils.DataBaseUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
@@ -42,7 +42,7 @@ public class UpdateMoviesRating {
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }finally {
-            DataBaseTasks.close(pstmt, conn);
+            DataBaseUtils.close(pstmt, conn);
         }
 
         if(result > 0){
