@@ -2,23 +2,16 @@ package MyImdb.demo.service;
 
 import MyImdb.demo.dto.MovieDetailDto;
 import MyImdb.demo.dto.MovieDto;
-import MyImdb.demo.enums.AddExternalMovieStatus;
-import MyImdb.demo.gson.MovieGson;
 import MyImdb.demo.mapper.MovieMapper;
 import MyImdb.demo.model.Movie;
 import MyImdb.demo.model.Review;
 import MyImdb.demo.repository.MovieRepository;
 import MyImdb.demo.repository.ReviewRepository;
-import MyImdb.demo.utils.GetMovieData;
 import MyImdb.demo.utils.UserSessionData;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONException;
-import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -27,7 +20,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import java.sql.Timestamp;
 import java.util.*;
 
 @Service
@@ -55,26 +47,6 @@ public class MovieService {
         return "Movie already exists";
     }
 
-    @Transactional
-    public AddExternalMovieStatus insertMovie(MovieGson movieGson){
-        Movie m = new Movie(movieGson.getTitle(), Integer.parseInt(movieGson.getYear()), movieGson.getPlot(),
-                movieGson.getDirector(), movieGson.getWriter(), movieGson.getCountry(), movieGson.getPoster(),
-                movieGson.getImdbID(), Integer.parseInt(movieGson.getRuntime().split(" ")[0]),
-                Float.parseFloat(movieGson.getImdbRating()), movieGson.getGenre(),
-                new Timestamp(System.currentTimeMillis()));
-
-        //if movie already exists in the DB
-        if(movieRepository.findByImdbId(m.getImdbId()).isPresent()){
-            return AddExternalMovieStatus.MOVIE_ALREADY_EXISTS_IN_DB;
-        }
-
-        movieRepository.save(m);
-
-        if(movieRepository.existsById(m.getId())){
-            return AddExternalMovieStatus.MOVIE_SAVED_SUCCESSFULLY;
-        }
-        return AddExternalMovieStatus.MOVIE_NOT_SAVED;
-    }
 
     //deprecated
     public ResponseEntity<?> getAllMovies(String username) {

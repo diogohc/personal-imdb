@@ -22,10 +22,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Vector;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -38,7 +35,6 @@ public class ReviewService {
 
     private final MovieRepository movieRepository;
 
-    private final UserService userService;
 
     //todo delete the usersessiondata
     @Transactional
@@ -139,4 +135,16 @@ public class ReviewService {
         }
         return ResponseEntity.status(HttpStatus.NOT_MODIFIED).body("not updated");
     }
+
+    public int getNrMoviesWatchedByUserId(Long userId){
+        return reviewRepository.nrMoviesWatchedByUserId(userId);
+    }
+
+    public int getMinutesWatchedByUserId(Long userId){
+        return reviewRepository.minutesMoviesWatched(userId);
+    }
+
+/*    public Map<Integer, Integer> getReviewsGroupedByRating(Long userId){
+        return reviewRepository.getCountReviewsGroupedByRating(userId);
+    }*/
 }

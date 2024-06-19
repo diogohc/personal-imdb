@@ -2,7 +2,6 @@ package MyImdb.demo.controller;
 
 import MyImdb.demo.config.JwtService;
 import MyImdb.demo.dto.MovieDto;
-import MyImdb.demo.enums.AddExternalMovieStatus;
 import MyImdb.demo.service.MovieService;
 import MyImdb.demo.service.UserService;
 import com.fasterxml.jackson.core.JsonProcessingException;

@@ -9,14 +9,14 @@
     </appender>
 
     <appender name="RollingFile" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>${LOGS}/log.log</file>
+        <file>${LOGS}/imdb-clone.log</file>
         <encoder>
             <pattern>${PATTERN}</pattern>
         </encoder>
 
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
             <!-- daily rollover -->
-            <fileNamePattern>${LOGS}/log.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <fileNamePattern>${LOGS}/imdb-clone-log.%d{yyyy-MM-dd}.log</fileNamePattern>
 
             <!-- keep 30 days' worth of history -->
             <maxHistory>30</maxHistory>

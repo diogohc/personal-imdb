@@ -3,8 +3,6 @@ package MyImdb.demo.scheduletasks;
 import MyImdb.demo.utils.DataBaseUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.core.env.Environment;
 import org.springframework.scheduling.annotation.Scheduled;
 
@@ -17,7 +15,7 @@ public class UpdateMoviesRating {
     private final Environment environment;
 
 
-    //update movie rating with the ratigns added in the last 24hours
+    //update movie rating with the ratings added in the last 24hours
     @Scheduled(cron = "0 0 20 ? * *")
     public void updateMoviesRating(){
         log.info("Process that updates movies rating started");
@@ -37,7 +35,6 @@ public class UpdateMoviesRating {
             pstmt = conn.prepareStatement(SQL.toString());
 
             result = pstmt.executeUpdate();
-
 
         } catch (SQLException e) {
             throw new RuntimeException(e);

@@ -27,7 +27,6 @@ public class SecurityConfiguration {
 
     private final AuthenticationProvider authenticationProvider;
 
-    //testar tirar o .cors() e ver se da para enviar o req do frontend na mesma
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
         httpSecurity.cors().and()

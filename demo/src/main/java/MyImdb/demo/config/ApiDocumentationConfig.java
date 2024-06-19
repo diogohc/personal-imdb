@@ -18,8 +18,8 @@ public class ApiDocumentationConfig {
                         .description("Personal IMDB API description")
                         .version("1.0.0")
                         .contact(new Contact()
-                                .name("example")
-                                .email("exaample@z.com")))
+                                .name("Diogo Correia")
+                                .email("diogo.h.correia@gmail.com")))
                 .externalDocs(new ExternalDocumentation()
                         .description("Documentation"));
     }

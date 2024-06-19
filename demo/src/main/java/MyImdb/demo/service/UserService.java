@@ -1,30 +1,24 @@
 package MyImdb.demo.service;
 
 import MyImdb.demo.dto.UserDetail;
-import MyImdb.demo.enums.AddExternalMovieStatus;
 import MyImdb.demo.exceptions.ResourceNotFoundException;
-import MyImdb.demo.model.Movie;
-import MyImdb.demo.model.Review;
 import MyImdb.demo.model.User;
 import MyImdb.demo.repository.ReviewRepository;
 import MyImdb.demo.repository.UserRepository;
 import MyImdb.demo.utils.DataBaseUtils;
 import MyImdb.demo.utils.ExcelUser;
 import MyImdb.demo.utils.MovieUtils;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.json.JSONException;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 import java.io.File;
 import java.io.IOException;
 import java.sql.*;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.List;
@@ -43,8 +37,6 @@ public class UserService {
 
     private final Environment environment;
 
-    private final MovieService movieService;
-
 
     public ObjectNode getUserStats(int userId){
         int totalNrMoviesWatched;
@@ -55,17 +47,13 @@ public class UserService {
         if(user.isPresent()){
             log.info("Getting user stats for user: " + userId);
 
-            totalNrMoviesWatched = reviewRepository.nrMoviesWatched(user.get().getId());
+            //total stats
+            totalNrMoviesWatched = reviewRepository.nrMoviesWatchedByUserId(user.get().getId());
             totalMinutesMoviesWatched = reviewRepository.minutesMoviesWatched(user.get().getId());
 
             Map<Integer, Integer> mapYearNrMoviesWatched = getMapYearNrMovies(userId);
 
-            //Create "main" JSON with all stats
-            json = objectMapper.createObjectNode();
-            json.put("nrMoviesWatched", totalNrMoviesWatched);
-            json.put("minutesMoviesWatched", totalMinutesMoviesWatched);
-
-            //create JSON with stats by year
+           //stats by year
             ArrayNode nrMoviesPerYearJson = objectMapper.createArrayNode();
 
             for(int key: mapYearNrMoviesWatched.keySet()){
@@ -75,8 +63,24 @@ public class UserService {
                 nrMoviesPerYearJson.add(jsonYearCount);
             }
 
-            //set the yearly stats to the main json
+            //reviews grouped by ratings
+            ArrayNode nrReviewsByRating = objectMapper.createArrayNode();
+            List<Object[]> result = reviewRepository.findRatingCountsByUserIdGrouped(userId);
+
+/*            Map<Integer, Long> ratingCountsMap = result.stream()
+                    .collect(Collectors.toMap(
+                            array -> (Integer) array[0],   // Rating
+                            array -> (Long) array[1]       // Count
+                    ));*/
+
+
+            //Create JSON object with all stats
+            json = objectMapper.createObjectNode();
+            json.put("nrMoviesWatched", totalNrMoviesWatched);
+            json.put("minutesMoviesWatched", totalMinutesMoviesWatched);
             json.set("nrMoviesPerYear", nrMoviesPerYearJson);
+
+
         }
         return json;
     }
@@ -140,7 +144,6 @@ public class UserService {
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
         Date date;
         List<String[]> lstMovieRatingInfo = MovieUtils.readImdbRatingsCsvFile(f);
-        AddExternalMovieStatus insertMovieStatus;
         int nrMoviesAdded = 0;
         int nrReviewsAdded = 0;
         Optional<User> user = userRepository.findById(userId);

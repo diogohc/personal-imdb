@@ -1,6 +1,5 @@
 package MyImdb.demo.repository;
 
-import MyImdb.demo.dto.ReviewDto;
 import MyImdb.demo.model.Review;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -28,11 +27,16 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
     int updateReviewRating(int rating, Timestamp timestamp, int reviewId);
 
     @Query(value= "select count(r) from Review r where r.user.id= ?1")
-    int nrMoviesWatched(long userId);
+    int nrMoviesWatchedByUserId(long userId);
 
     @Query(value = "select SUM(m.runtime) from Movie m inner join Review r on r.movie.id=m.id where r.user.id=?1")
     int minutesMoviesWatched(long userId);
 
+    @Query(value = "SELECT NEW map(r.rating as rating, COUNT(*) as count) FROM Review r WHERE r.user.id = ?1 GROUP BY r.rating")
+    List<Object[]> findRatingCountsByUserIdGrouped(long userId);
+
     @Query(value = "select r from Review r INNER JOIN Movie m ON r.movie.id = m.id  and r.user.id= ?1")
     Page<Object[]> getReviewsByUserIdWithPagination(Long userId, Pageable pageable);
+
+
 }
