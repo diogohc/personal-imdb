@@ -58,7 +58,7 @@ public class MovieService {
 
         moviesList.forEach(movie -> {
             Integer rating = userSessionData.getUserData().mapMovieIdRating.get(movie.getId().intValue());
-            MovieDto movieDto = new MovieDto(Math.toIntExact(movie.getId()), movie.getTitle(), movie.getPoster(), rating == null ? -1 : rating);
+            MovieDto movieDto = new MovieDto(Math.toIntExact(movie.getId()), movie.getTitle(), movie.getPoster(), rating == null ? -1 : rating, movie.getYear());
             movies.add(movieDto);
         });
 

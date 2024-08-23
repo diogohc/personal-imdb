@@ -12,6 +12,6 @@ public class ReviewMapper {
 
     public static MovieDto mapToMovieDto(Review review){
         Movie movie = review.getMovie();
-        return new MovieDto(Math.toIntExact(movie.getId()), movie.getTitle(), movie.getPoster(), review.getRating());
+        return new MovieDto(Math.toIntExact(movie.getId()), movie.getTitle(), movie.getPoster(), review.getRating(), movie.getYear());
     }
 }
