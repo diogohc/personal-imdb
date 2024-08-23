@@ -9,11 +9,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
-import java.nio.file.attribute.UserPrincipal;
 import java.security.Key;
 import java.util.Date;
 import java.util.HashMap;
@@ -70,7 +68,7 @@ public class JwtService {
 
         List<String> currentUserRoles =
                 userDetails.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList();
-        System.out.println("USER ROLES: "+ currentUserRoles);
+
         Map<String, Object> claims = new HashMap<>();
         claims.put("userId", userId);
         claims.put("role", role);

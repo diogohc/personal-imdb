@@ -49,10 +49,18 @@ public class UserController {
 
     @GetMapping("")
     @Operation(summary = "Get user details using JWT")
-    public ResponseEntity<UserDetail> getUserDetails(@RequestHeader("Authorization") String authorizationHeader){
+    public ResponseEntity<UserDetail> getUserDetailsByJWT(@RequestHeader("Authorization") String authorizationHeader){
         Long userId = jwtService.extractUserId(authorizationHeader);
         log.info("[GET] - Get user details for user with id {}", userId);
         UserDetail userDetail = userService.getUserById(userId);
+        return new ResponseEntity<>(userDetail, HttpStatus.OK);
+    }
+
+    @GetMapping("/{id}")
+    @Operation(summary = "Get user details by id")
+    public ResponseEntity<UserDetail> getUserDetailsById(@RequestHeader("Authorization") String authorizationHeader, @PathVariable(name="id") int id){
+        log.info("[GET] - Get user details for user with id {}", id);
+        UserDetail userDetail = userService.getUserById(id);
         return new ResponseEntity<>(userDetail, HttpStatus.OK);
     }
 

@@ -6,8 +6,11 @@ import MyImdb.demo.auth.RegisterRequest;
 import MyImdb.demo.service.AuthenticationService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.net.HttpURLConnection;
 
 
 @RestController
@@ -25,6 +28,12 @@ public class AuthenticationController {
     @Operation(summary = "Authenticate registered user")
     @PostMapping("/authenticate")
     public ResponseEntity<AuthenticationResponse> authenticate(@RequestBody AuthenticationRequest request) {
+        AuthenticationResponse authResponse = authenticationService.authenticate(request);
+
+        if(authResponse.getId() <= 0){
+            return ResponseEntity.status(HttpURLConnection.HTTP_UNAUTHORIZED).body(null);
+        }
+
         return ResponseEntity.ok(authenticationService.authenticate(request));
     }
 

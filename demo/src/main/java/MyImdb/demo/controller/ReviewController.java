@@ -29,7 +29,6 @@ public class ReviewController {
     @PostMapping("/addReview")
     public ResponseEntity<?> addReview(@RequestHeader("Authorization") String authorizationHeader,
                                        @RequestBody ReviewDto reviewdto){
-        //String username = SecurityContextHolder.getContext().getAuthentication().getName();
         Long userId = jwtService.extractUserId(authorizationHeader);
         if(userId == -1){
             return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
