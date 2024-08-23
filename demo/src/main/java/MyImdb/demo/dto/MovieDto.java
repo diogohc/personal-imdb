@@ -14,4 +14,5 @@ public class MovieDto {
     String movieTitle;
     String moviePoster;
     int reviewRating;
+    int releaseYear;
 }
