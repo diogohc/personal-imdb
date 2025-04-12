@@ -72,7 +72,7 @@ public class AuthenticationService {
         //generate token and return it
         String token = jwtService.generateToken(user.get(), user.get().getId(), user.get().getRole());
 
-        return AuthenticationResponse.builder().token(token).id(Math.toIntExact(user.get().getId())).role(user.get().getRole()).build();
+        return AuthenticationResponse.builder().response("success").token(token).build();
     }
 
 
