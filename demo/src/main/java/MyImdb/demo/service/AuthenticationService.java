@@ -8,8 +8,6 @@ import MyImdb.demo.dto.ReviewDto;
 import MyImdb.demo.model.Role;
 import MyImdb.demo.model.User;
 import MyImdb.demo.repository.UserRepository;
-import MyImdb.demo.utils.UserData;
-import MyImdb.demo.utils.UserSessionData;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,14 +57,6 @@ public class AuthenticationService {
         if(user.isEmpty() || !passwordEncoder.matches(request.getPassword(), user.get().getPassword())){
             return AuthenticationResponse.builder().response("Wrong credentials").build();
         }
-
-
-        //Populate User Data
-        UserData userData = new UserData();
-        userData.mapMovieIdRating = populateMapMovieIdRating(user.get().getUsername());
-
-        UserSessionData userSessionData = new UserSessionData();
-        userSessionData.setUserData(userData);
 
         log.info("User {} successfully logged in", user.get().getUsername());
         //generate token and return it

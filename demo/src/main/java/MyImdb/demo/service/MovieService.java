@@ -7,7 +7,6 @@ import MyImdb.demo.model.Movie;
 import MyImdb.demo.model.Review;
 import MyImdb.demo.repository.MovieRepository;
 import MyImdb.demo.repository.ReviewRepository;
-import MyImdb.demo.utils.UserSessionData;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -45,24 +44,6 @@ public class MovieService {
         }
 
         return "Movie already exists";
-    }
-
-
-    //deprecated
-    public ResponseEntity<?> getAllMovies(String username) {
-
-        List<Movie> moviesList = movieRepository.findAll();
-        List<MovieDto> movies = new ArrayList<MovieDto>();
-
-        UserSessionData userSessionData = new UserSessionData();
-
-        moviesList.forEach(movie -> {
-            Integer rating = userSessionData.getUserData().mapMovieIdRating.get(movie.getId().intValue());
-            MovieDto movieDto = new MovieDto(Math.toIntExact(movie.getId()), movie.getTitle(), movie.getPoster(), rating == null ? -1 : rating, movie.getYear());
-            movies.add(movieDto);
-        });
-
-        return new ResponseEntity<Object>(movies, HttpStatus.OK);
     }
 
     //TODO use a query to fetch movie + review (inner join) like it is on the list instead of doing 2 database selects
