@@ -41,7 +41,7 @@ demo/logs/log.log
 
 ### Secrets ###
 demo/src/main/resources/secrets.properties
-FetchInfoService/src/main/resources/secrets.properties
+fetch-movie-info/src/main/resources/secrets.properties
 
 ### Notes ###
 notes.txt
