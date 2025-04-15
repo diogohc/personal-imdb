@@ -23,7 +23,7 @@ import java.util.function.Function;
 @Slf4j
 public class JwtService {
     //2hrs
-    private long TOKEN_VALIDITY = 2 * 60 * 60 * 1000;
+    private long TOKEN_VALIDITY = 2 * 60 * 600 * 1000;
     @Value("${SECRET_KEY}")
     private String SECRET_KEY;
 
@@ -71,7 +71,7 @@ public class JwtService {
 
         Map<String, Object> claims = new HashMap<>();
         claims.put("userId", userId);
-        claims.put("role", role);
+        claims.put("role", "ROLE_"+role);
         return generateToken(claims, userDetails);
     }
 

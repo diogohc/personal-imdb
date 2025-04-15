@@ -11,7 +11,6 @@ import MyImdb.demo.model.User;
 import MyImdb.demo.repository.MovieRepository;
 import MyImdb.demo.repository.ReviewRepository;
 import MyImdb.demo.repository.UserRepository;
-import MyImdb.demo.utils.UserSessionData;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -47,10 +46,6 @@ public class ReviewService {
             reviewRepository.save(review);
 
             if(reviewRepository.existsById(review.getId())){
-                //update the user's map with the new review
-                UserSessionData userSessionData = new UserSessionData();
-                userSessionData.getUserData().mapMovieIdRating.put((int) reviewdto.getMovieId(), review.getRating());
-
                 return ResponseEntity.status(HttpStatus.CREATED).body(review);
             }
         }
@@ -126,10 +121,6 @@ public class ReviewService {
         if (nrRecordsUpdated==1) {
             Optional<Review> updatedReview = reviewRepository.findById((long) reviewDto.getId());
             if(updatedReview.isPresent()){
-                //update the user's map with the new review
-                UserSessionData userSessionData = new UserSessionData();
-                userSessionData.getUserData().mapMovieIdRating.put((int) reviewDto.getMovieId(), reviewDto.getRating());
-
                 return ResponseEntity.status(HttpStatus.OK).body(reviewDto);
             }
         }

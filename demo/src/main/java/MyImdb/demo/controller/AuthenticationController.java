@@ -30,11 +30,11 @@ public class AuthenticationController {
     public ResponseEntity<AuthenticationResponse> authenticate(@RequestBody AuthenticationRequest request) {
         AuthenticationResponse authResponse = authenticationService.authenticate(request);
 
-        if(authResponse.getId() <= 0){
-            return ResponseEntity.status(HttpURLConnection.HTTP_UNAUTHORIZED).body(null);
+        if(authResponse.getToken() == null){
+            return ResponseEntity.status(HttpURLConnection.HTTP_UNAUTHORIZED).body(authResponse);
         }
 
-        return ResponseEntity.ok(authenticationService.authenticate(request));
+        return ResponseEntity.ok(authResponse);
     }
 
 }

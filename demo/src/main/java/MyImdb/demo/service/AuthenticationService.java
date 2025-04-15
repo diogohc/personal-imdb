@@ -8,8 +8,6 @@ import MyImdb.demo.dto.ReviewDto;
 import MyImdb.demo.model.Role;
 import MyImdb.demo.model.User;
 import MyImdb.demo.repository.UserRepository;
-import MyImdb.demo.utils.UserData;
-import MyImdb.demo.utils.UserSessionData;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,19 +58,11 @@ public class AuthenticationService {
             return AuthenticationResponse.builder().response("Wrong credentials").build();
         }
 
-
-        //Populate User Data
-        UserData userData = new UserData();
-        userData.mapMovieIdRating = populateMapMovieIdRating(user.get().getUsername());
-
-        UserSessionData userSessionData = new UserSessionData();
-        userSessionData.setUserData(userData);
-
         log.info("User {} successfully logged in", user.get().getUsername());
         //generate token and return it
         String token = jwtService.generateToken(user.get(), user.get().getId(), user.get().getRole());
 
-        return AuthenticationResponse.builder().token(token).id(Math.toIntExact(user.get().getId())).role(user.get().getRole()).build();
+        return AuthenticationResponse.builder().response("success").token(token).build();
     }
 
 

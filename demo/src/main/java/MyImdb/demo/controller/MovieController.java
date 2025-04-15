@@ -1,6 +1,7 @@
 package MyImdb.demo.controller;
 
 import MyImdb.demo.config.JwtService;
+import MyImdb.demo.dto.ImdbIdDto;
 import MyImdb.demo.dto.MovieDto;
 import MyImdb.demo.service.MovieService;
 import MyImdb.demo.service.UserService;
@@ -22,7 +23,6 @@ import java.util.List;
 @Slf4j
 @RequestMapping("/api/v1/movies")
 @RequiredArgsConstructor
-@PermitAll
 public class MovieController {
     private final MovieService movieService;
 
@@ -31,13 +31,13 @@ public class MovieController {
     private final JwtService jwtService;
 
     @Operation(summary = "Add a new movie")
-    @PostMapping("/addMovie/{imdb_id}")
+    @PostMapping("/addMovie")
     public ResponseEntity<?> addMovie(@RequestHeader("Authorization") String authorizationHeader,
-                                      @PathVariable(name="imdb_id") String imdb_id) throws JsonProcessingException, JSONException {
+                                      @RequestBody ImdbIdDto imdbIdDto) throws JsonProcessingException, JSONException {
         Long userId = jwtService.extractUserId(authorizationHeader);
 
         log.info("[POST] - Add a new movie to the database by user {}", userId);
-        String resp = movieService.addMovie(imdb_id);
+        String resp = movieService.addMovie(imdbIdDto.imdb_id);
 
         return new ResponseEntity<>(resp,HttpStatus.OK);
     }
@@ -55,11 +55,10 @@ public class MovieController {
     }
 
     @Operation(summary = "Get list of all movies with pagination and sorting (asc/desc)")
-    @GetMapping("/all-movies")
-    public ResponseEntity<?> getMoviesPaginatedAndSorted(@RequestHeader("Authorization") String authorizationHeader,
-                                                @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int pageSize,
+    @GetMapping("/all-movies/user/{userId}")
+    public ResponseEntity<?> getMoviesPaginatedAndSorted(@PathVariable(name="userId") long userId,
+                                                         @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int pageSize,
                                                 @RequestParam(defaultValue = "id") String sortBy, @RequestParam(defaultValue = "desc") String ascOrDesc){
-        Long userId = jwtService.extractUserId(authorizationHeader);
 
         log.info("[GET] - Get all movies paginated and sorted by user {}", userId);
 
