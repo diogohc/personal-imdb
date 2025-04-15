@@ -1,6 +1,7 @@
 package MyImdb.demo.controller;
 
 import MyImdb.demo.config.JwtService;
+import MyImdb.demo.dto.ImdbIdDto;
 import MyImdb.demo.dto.MovieDto;
 import MyImdb.demo.service.MovieService;
 import MyImdb.demo.service.UserService;
@@ -30,13 +31,13 @@ public class MovieController {
     private final JwtService jwtService;
 
     @Operation(summary = "Add a new movie")
-    @PostMapping("/addMovie/{imdb_id}")
+    @PostMapping("/addMovie")
     public ResponseEntity<?> addMovie(@RequestHeader("Authorization") String authorizationHeader,
-                                      @PathVariable(name="imdb_id") String imdb_id) throws JsonProcessingException, JSONException {
+                                      @RequestBody ImdbIdDto imdbIdDto) throws JsonProcessingException, JSONException {
         Long userId = jwtService.extractUserId(authorizationHeader);
 
         log.info("[POST] - Add a new movie to the database by user {}", userId);
-        String resp = movieService.addMovie(imdb_id);
+        String resp = movieService.addMovie(imdbIdDto.imdb_id);
 
         return new ResponseEntity<>(resp,HttpStatus.OK);
     }
