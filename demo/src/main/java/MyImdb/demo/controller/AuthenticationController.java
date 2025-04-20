@@ -23,7 +23,14 @@ public class AuthenticationController {
     @Operation(summary = "Register a new user")
     @PostMapping("/register")
     public ResponseEntity<AuthenticationResponse> register(@RequestBody RegisterRequest request) {
-        return ResponseEntity.ok(authenticationService.register(request));
+        AuthenticationResponse response = authenticationService.register(request);
+
+
+        if("Username already exists".equals(response.getResponse())){
+            return ResponseEntity.status(HttpURLConnection.HTTP_OK).body(response);
+        }
+
+        return ResponseEntity.status(HttpURLConnection.HTTP_CREATED).body(response);
     }
     @Operation(summary = "Authenticate registered user")
     @PostMapping("/authenticate")
