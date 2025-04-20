@@ -45,7 +45,7 @@ public class AuthenticationService {
         log.info("User {} successfully registered", user.getUsername());
         String token = jwtService.generateToken(user, user.getId(), user.getRole());
 
-        return AuthenticationResponse.builder().token(token).build();
+        return AuthenticationResponse.builder().response("User successfully registered").build();
     }
 
     public AuthenticationResponse authenticate(AuthenticationRequest request) {

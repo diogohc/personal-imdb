@@ -35,7 +35,7 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
     @Query(value = "SELECT NEW map(r.rating as rating, COUNT(*) as count) FROM Review r WHERE r.user.id = ?1 GROUP BY r.rating")
     List<Object[]> findRatingCountsByUserIdGrouped(long userId);
 
-    @Query(value = "select r from Review r INNER JOIN Movie m ON r.movie.id = m.id  and r.user.id= ?1")
+    @Query(value = "select m, r.rating from Review r INNER JOIN Movie m ON r.movie.id = m.id  and r.user.id= ?1")
     Page<Object[]> getReviewsByUserIdWithPagination(Long userId, Pageable pageable);
 
 
