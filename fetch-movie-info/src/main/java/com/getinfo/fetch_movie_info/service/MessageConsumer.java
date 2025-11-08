@@ -34,6 +34,9 @@ public class MessageConsumer {
         MovieDto movieDto = getMovieInfoService.getMovie(message);
 
         if(movieDto != null){
+            if(movieDto.imdbRating == null  || movieDto.imdbRating.equals("N/A")){
+                movieDto.imdbRating = "0";
+            }
             Movie m = new Movie(movieDto.Title, Integer.parseInt(movieDto.Year), movieDto.Plot, movieDto.Director, movieDto.Writer, movieDto.Country,
                     movieDto.Poster, movieDto.imdbID, Integer.parseInt(movieDto.Runtime.split(" ")[0]), Float.parseFloat(movieDto.imdbRating), movieDto.Genre,
                     new Timestamp(System.currentTimeMillis())
