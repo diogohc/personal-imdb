@@ -17,7 +17,7 @@ public class MovieService {
 
     public void saveMovie(Movie movie){
         movieRepository.save(movie);
-        logger.info("Movie with title" + movie.title + " has been saved");
+        logger.info(String.format("Movie with title %s has been saved", movie.title));
 
     }
 
